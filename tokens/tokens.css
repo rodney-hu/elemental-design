@@ -1,0 +1,94 @@
+/**
+ * GENSO (元素) — DESIGN TOKENS
+ * Single source of truth. See docs/philosophy.md for what each element
+ * means, and docs/foundations.md for the rules on how to use these.
+ *
+ * Never hand-type a hex code in a component — if it's not here, add it
+ * here first.
+ */
+
+:root {
+  /* — Neutrals — */
+  --sumi: #131110;         /* ink — primary background */
+  --sumi-2: #1B1815;       /* panel base, before glass tint / hover state */
+  --washi: #F3EEE4;        /* paper — primary text/foreground */
+  --washi-dim: #C8C1B3;    /* paper, muted — secondary text */
+
+  --line: rgba(243, 238, 228, 0.09);         /* hairline dividers, card borders */
+  --line-strong: rgba(243, 238, 228, 0.18);  /* active/hover borders */
+
+  /* — Four elements — each a color AND a behavior. See philosophy.md — */
+
+  /* FIRE · red · bold — primary accent, matched to the real logo */
+  --fire: #AA0000;
+  --fire-text: #E2574A;    /* lighter tint — use for text/labels on dark bg */
+  --fire-soft: rgba(170, 0, 0, 0.18);
+  --fire-glow: rgba(170, 0, 0, 0.45);
+  --fire-glow-bold: rgba(170, 0, 0, 0.75);
+
+  /* WATER · blue · fluid — secondary accent, info */
+  --water: #1E6FB8;
+  --water-text: #5CA0DE;
+  --water-soft: rgba(30, 111, 184, 0.18);
+  --water-glow: rgba(30, 111, 184, 0.45);
+  --water-glow-bold: rgba(30, 111, 184, 0.75);
+
+  /* EARTH · green · grounded — stability, success-adjacent */
+  --earth: #2E8B57;
+  --earth-text: #5FBE87;
+  --earth-soft: rgba(46, 139, 87, 0.18);
+  --earth-glow: rgba(46, 139, 87, 0.45);
+  --earth-glow-bold: rgba(46, 139, 87, 0.75);
+
+  /* AIR · gold · formless — the elevated/premium accent */
+  --air: #CBA135;
+  --air-text: #DDB65C;
+  --air-soft: rgba(203, 161, 53, 0.18);
+  --air-glow: rgba(203, 161, 53, 0.4);
+  --air-glow-bold: rgba(203, 161, 53, 0.7);   /* capped below others on purpose — see decisions.md */
+
+  /* — Semantic — separate axis from element color, see foundations.md — */
+  --semantic-error: #AA0000;
+  --semantic-warning: #EAB308;
+  --semantic-success: #22C55E;
+
+  /* — Typography — see foundations.md for the hard rules on each role — */
+  --font-brush: 'Permanent Marker', cursive;   /* Latin wordmark ONLY — no kanji glyphs */
+  --font-kanji: 'Ma Shan Zheng', cursive;       /* kanji marks ONLY — 元 火 水 土 風 */
+  --font-head: 'Klee One', cursive;             /* headings — covers Latin + inline kanji */
+  --font-body: 'Zen Kaku Gothic New', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* — Spacing — bias toward more space, not less — */
+  --space-xs: 0.25rem;   /* 4px  — icon + label */
+  --space-sm: 0.5rem;    /* 8px  — tight controls */
+  --space-md: 1rem;      /* 16px — minimum content spacing */
+  --space-lg: 1.5rem;    /* 24px — default between cards */
+  --space-xl: 2rem;      /* 32px — section spacing */
+  --space-2xl: 3rem;     /* 48px — page breaks */
+
+  /* — Radius — sharp, not soft. See foundations.md — */
+  --radius-sm: 2px;   /* buttons, inputs, chips */
+  --radius-md: 3px;   /* cards, panels */
+  --radius-lg: 6px;   /* modals, hero elements — still restrained */
+
+  /* — Motion — one curve for the whole system — */
+  --ease-air: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;    /* micro-interactions — button press */
+  --duration-default: 400ms; /* standard hover/transition */
+  --duration-slow: 700ms;    /* entrances */
+}
+
+/* — Reusable entrance motion (the "Air" behavior — fade + rise) — */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.rise {
+  opacity: 0;
+  animation: riseIn var(--duration-slow) var(--ease-air) forwards;
+}
+.rise-d1 { animation-delay: 0.05s; }
+.rise-d2 { animation-delay: 0.18s; }
+.rise-d3 { animation-delay: 0.30s; }
+.rise-d4 { animation-delay: 0.42s; }
