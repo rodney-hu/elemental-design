@@ -37,8 +37,19 @@ explains *why*, this file says *what to actually do*.
     swatch label). Default to this for anything both scripts touch.
   - `--font-body` (Zen Kaku Gothic New) — all body copy.
   - `--font-mono` (JetBrains Mono) — labels, status text, hex codes.
-- Uppercase is reserved for the brush wordmark. Don't uppercase body
-  copy or headings — it fights the calm, quiet register.
+- Use the type scale (`--text-2xs` … `--text-4xl`), never a hand-typed
+  size. Sizes below 20px are fixed; display sizes are fluid `clamp()`,
+  so a heading needs no responsive variants. Body copy is `--text-base`.
+- **13px (`--text-2xs`) is the hard floor.** Nothing renders smaller.
+- Uppercase is reserved for the brush wordmark **and small mono eyebrow
+  labels** — see `decisions.md`. It never goes on body copy or on
+  anything that is really a heading: if it labels a block of content and
+  would be an `<h2>`/`<h3>` in markup, it gets `--font-head` at a real
+  size, not a mono label.
+- One letter-spacing value for labels (`--tracking-label`), one for
+  headings (`--tracking-display`). Don't add a third.
+- Don't set `-webkit-font-smoothing: antialiased`. It thins glyph stems
+  on macOS and reads as "the text is too small" — see `decisions.md`.
 
 ## Shape and space
 
@@ -58,11 +69,15 @@ explains *why*, this file says *what to actually do*.
 - Entrances fade + rise (`riseIn` keyframe in `tokens/tokens.css`).
   Nothing bounces, nothing overshoots — see `motion/README.md` for the
   full per-element motion language.
-- The page background itself does not glow or animate. Ambient
-  background glow was tried and removed (see `decisions.md`) — it read
-  as a red-tinted background rather than a subtle effect, and fought the
-  ink-black minimalism. Glow belongs to specific elements the user is
-  looking at, not the page shell.
+- The page background **never animates**. No keyframes on the shell, no
+  scroll-driven effects.
+- The page background **may carry a static corner aura** — one hue
+  (fire), anchored to a section's top corner, alpha ≤0.055, falling off
+  before the reading column, on alternating sides, and absent from some
+  sections. Full-page multi-hue glow is still banned: that's what read
+  as a red-tinted background the first time. See `decisions.md` for the
+  conditions and the `--aura-*` tokens; get any of them wrong and it
+  reads as a tint again.
 
 ## Fonts and network
 
