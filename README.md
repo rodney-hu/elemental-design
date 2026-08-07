@@ -3,35 +3,98 @@
 Genso (元素) — Rodney's personal design system. Built once, reused across
 every project, so no project starts from a blank canvas.
 
-Not yet pushed to GitHub — this folder is the source of truth until it is.
-See `docs/decisions.md` for why.
-
 ## Folder map
 
 | Folder | What lives here | When to open it |
 |---|---|---|
 | `docs/` | The *why* — philosophy, operating rules, decision log | Before changing a token, or when you forget why something is the way it is |
-| `tokens/` | The *what* — colors, type, spacing, motion as CSS variables + Tailwind config | Every new project starts here |
+| `tokens/` | The *what* — colors, type, spacing, motion as CSS variables + the Tailwind preset + font loading | Every new project starts here |
 | `components/` | The *how* — reusable UI primitives (Button, Card, Input, Badge, Status, Compare) | Building any interface |
 | `layout/` | Page-level shells (Sidebar, Dashboard shell, Centered form) | Starting a new page type |
-| `motion/` | Animation principles + reusable keyframes, one per element | Adding any transition or entrance animation |
-| `assets/` | Self-hosted fonts (subsetted, no CDN dependency) and logo files | Wiring up a new project's `<head>` |
+| `motion/` | Animation principles, CSS keyframes, and the JS constants for framer-motion | Adding any transition or entrance animation |
+| `assets/` | Self-hosted fonts (subsetted, no CDN dependency) and logo files | Rarely — `tokens/fonts.css` wires these up for you |
 | `showcase/` | The living style guide — a real page that demonstrates the whole system | Reference, and the seed of the public showcase site |
+| `scripts/` | `check-tokens.mjs` — the integrity check that keeps the above honest | Run it via `npm run check` |
 
-## Quick start (new project)
+## Using it in a project
 
-1. Copy `tokens/tokens.css` and `tokens/tailwind.config.js` into the project.
-2. Import `tokens.css` above your Tailwind directives.
-3. Copy the font files from `assets/fonts/` and wire them up (see
-   `assets/fonts/README.md` — do not link Google Fonts directly, see
-   `docs/decisions.md` for why).
-4. Copy whichever `components/` and `layout/` files the project needs.
-5. Build using the semantic classes (`bg-fire`, `text-water-text`,
-   `shadow-glow-fire`, etc.) — never a hand-typed hex code. If a token is
-   missing, add it to `tokens/tokens.css` first, then use it.
+**Install it — do not copy files out of it.** Copying is what broke this
+system once already: bugs got fixed downstream in the consuming project and
+never made it back, so the "source of truth" quietly became the more broken
+copy. See `docs/decisions.md`. Everything below is designed so there is
+exactly one copy of every value.
+
+```bash
+npm install "file:../elemental-design"   # sibling folder; swap for the git URL once pushed
+```
+
+**1. Tailwind — extend the preset, never paste it:**
+
+```js
+// tailwind.config.js
+module.exports = {
+  presets: [require("elemental-design/tailwind")],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: { extend: { /* project-only additions go here */ } },
+};
+```
+
+**2. CSS — import fonts and tokens above your Tailwind directives:**
+
+```css
+@import "elemental-design/fonts.css";
+@import "elemental-design/tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+The font files resolve straight out of the package — no copying `.woff2`
+files into each project.
+
+**3. Components and motion — import them:**
+
+```ts
+import { Button, Card, Status } from "elemental-design/primitives";
+import { DashboardShell, Sidebar } from "elemental-design/shells";
+import { easeAir, duration, riseInOnScroll } from "elemental-design/motion";
+```
+
+**4. Build with the semantic classes** (`bg-fire`, `text-water-text`,
+`shadow-glow-fire`, `border-line`) — never a hand-typed hex. If a token is
+missing, add it to `tokens/tokens.css` here, then use it. `npm run check`
+fails the build if a component hand-types a color.
+
+## Changing a color
+
+Every color is authored **once**, as an RGB channel triplet:
+
+```css
+--fire-rgb: 170 0 0;
+--fire: rgb(var(--fire-rgb));          /* derived */
+--fire-soft: rgb(var(--fire-rgb) / 0.18);  /* derived */
+```
+
+Change the triplet. Everything else follows. The triplets exist because
+Tailwind opacity modifiers (`bg-fire/40`) cannot compose an alpha channel
+onto an opaque `var(--fire)` — see `docs/decisions.md`.
+
+## Checks
+
+```bash
+npm run check
+```
+
+Verifies that the Tailwind preset only references tokens that exist, that
+`motion/motion.ts` still matches the CSS motion tokens, and that no component
+has hand-typed a hex, a `white/xx` literal, or an opacity modifier on a color
+that can't take one. Run it after touching tokens, the preset, or motion.
 
 ## Status
 
-Concept stage (v0.3). Palette, type, and core primitives are settled.
-Not yet used in a shipped project. See `docs/decisions.md` for the full
-history of what changed and why, so nothing gets re-litigated by accident.
+**v0.4 — in production.** Shipped in `gtm-portfolio` (rodneyhu.com). The
+v0.3→v0.4 pass fixed the bugs that surfaced building it and closed the gaps
+that forced that project to invent its own type scale. See `CHANGELOG.md` for
+what changed and `docs/decisions.md` for why, so nothing gets re-litigated by
+accident.

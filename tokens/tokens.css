@@ -5,90 +5,281 @@
  *
  * Never hand-type a hex code in a component — if it's not here, add it
  * here first.
+ *
+ * — How colour is defined here —
+ * Each colour is authored ONCE, as an RGB channel triplet (`--fire-rgb`).
+ * Everything else derives from it: the plain colour, the soft fill, the
+ * glows. Two reasons:
+ *   1. Tailwind opacity modifiers (`bg-air/10`, `border-water/40`) cannot
+ *      compose an alpha channel onto an opaque `var(--x)` hex value. They
+ *      need the bare channels, which is what tailwind-preset.cjs reads.
+ *   2. Authoring the hex and the triplet separately means keeping two
+ *      values in sync by hand forever. Deriving means there is only ever
+ *      one number to change.
+ * To change a colour, change its `-rgb` triplet. Nothing else.
  */
 
 :root {
-  /* — Neutrals — */
-  --sumi: #131110;         /* ink — primary background */
-  --sumi-2: #1B1815;       /* panel base, before glass tint / hover state */
-  --washi: #F3EEE4;        /* paper — primary text/foreground */
-  --washi-dim: #C8C1B3;    /* paper, muted — secondary text */
+  /* — Channel triplets — the only place a colour is actually authored — */
 
-  --line: rgba(243, 238, 228, 0.09);         /* hairline dividers, card borders */
-  --line-strong: rgba(243, 238, 228, 0.18);  /* active/hover borders */
+  /* Neutrals */
+  --sumi-rgb: 19 17 16;
+  --sumi-2-rgb: 27 24 21;
+  --washi-rgb: 243 238 228;
+  --washi-dim-rgb: 217 211 199;
+
+  /* Elements */
+  --fire-rgb: 170 0 0;
+  --fire-text-rgb: 240 119 106;
+  --water-rgb: 30 111 184;
+  --water-text-rgb: 92 160 222;
+  --earth-rgb: 46 139 87;
+  --earth-text-rgb: 95 190 135;
+  --air-rgb: 203 161 53;
+  --air-text-rgb: 221 182 92;
+
+  /* Semantic */
+  --semantic-error-rgb: 170 0 0;
+  --semantic-error-text-rgb: 248 113 113;
+  --semantic-warning-rgb: 234 179 8;
+  --semantic-warning-text-rgb: 234 179 8;
+  --semantic-success-rgb: 34 197 94;
+  --semantic-success-text-rgb: 74 222 128;
+
+  /* — Neutrals — */
+  --sumi: rgb(var(--sumi-rgb)); /* ink — primary background */
+  --sumi-2: rgb(var(--sumi-2-rgb)); /* panel base, before glass tint / hover */
+  --washi: rgb(var(--washi-rgb)); /* paper — primary text, incl. body prose */
+  --washi-dim: rgb(
+    var(--washi-dim-rgb)
+  ); /* paper, muted — SECONDARY text only (meta, captions,
+                              chips, nav). Never body copy — see decisions.md. */
+
+  --line: rgb(var(--washi-rgb) / 0.09); /* hairline dividers, card borders */
+  --line-strong: rgb(var(--washi-rgb) / 0.18); /* active/hover borders */
 
   /* — Four elements — each a color AND a behavior. See philosophy.md — */
 
   /* FIRE · red · bold — primary accent, matched to the real logo */
-  --fire: #AA0000;
-  --fire-text: #E2574A;    /* lighter tint — use for text/labels on dark bg */
-  --fire-soft: rgba(170, 0, 0, 0.18);
-  --fire-glow: rgba(170, 0, 0, 0.45);
-  --fire-glow-bold: rgba(170, 0, 0, 0.75);
+  --fire: rgb(var(--fire-rgb));
+  --fire-text: rgb(
+    var(--fire-text-rgb)
+  ); /* lighter tint — text/labels on dark bg.
+                              Brightened from #E2574A (4.79:1 on sumi-2,
+                              marginal) to 6.36:1 — level with --water-text. */
+  --fire-soft: rgb(var(--fire-rgb) / 0.18);
+  --fire-glow: rgb(var(--fire-rgb) / 0.45);
+  --fire-glow-bold: rgb(var(--fire-rgb) / 0.75);
 
   /* WATER · blue · fluid — secondary accent, info */
-  --water: #1E6FB8;
-  --water-text: #5CA0DE;
-  --water-soft: rgba(30, 111, 184, 0.18);
-  --water-glow: rgba(30, 111, 184, 0.45);
-  --water-glow-bold: rgba(30, 111, 184, 0.75);
+  --water: rgb(var(--water-rgb));
+  --water-text: rgb(var(--water-text-rgb));
+  --water-soft: rgb(var(--water-rgb) / 0.18);
+  --water-glow: rgb(var(--water-rgb) / 0.45);
+  --water-glow-bold: rgb(var(--water-rgb) / 0.75);
 
   /* EARTH · green · grounded — stability, success-adjacent */
-  --earth: #2E8B57;
-  --earth-text: #5FBE87;
-  --earth-soft: rgba(46, 139, 87, 0.18);
-  --earth-glow: rgba(46, 139, 87, 0.45);
-  --earth-glow-bold: rgba(46, 139, 87, 0.75);
+  --earth: rgb(var(--earth-rgb));
+  --earth-text: rgb(var(--earth-text-rgb));
+  --earth-soft: rgb(var(--earth-rgb) / 0.18);
+  --earth-glow: rgb(var(--earth-rgb) / 0.45);
+  --earth-glow-bold: rgb(var(--earth-rgb) / 0.75);
 
   /* AIR · gold · formless — the elevated/premium accent */
-  --air: #CBA135;
-  --air-text: #DDB65C;
-  --air-soft: rgba(203, 161, 53, 0.18);
-  --air-glow: rgba(203, 161, 53, 0.4);
-  --air-glow-bold: rgba(203, 161, 53, 0.7);   /* capped below others on purpose — see decisions.md */
+  --air: rgb(var(--air-rgb));
+  --air-text: rgb(var(--air-text-rgb));
+  --air-soft: rgb(var(--air-rgb) / 0.18);
+  --air-glow: rgb(var(--air-rgb) / 0.4);
+  --air-glow-bold: rgb(
+    var(--air-rgb) / 0.7
+  ); /* capped below others on purpose — see decisions.md */
 
-  /* — Semantic — separate axis from element color, see foundations.md — */
-  --semantic-error: #AA0000;
-  --semantic-warning: #EAB308;
-  --semantic-success: #22C55E;
+  /* — Semantic — separate axis from element color, see foundations.md —
+     The base values are fills/borders only. The `-text` variants exist because
+     the base reds/greens are unreadable as text on ink: --semantic-error is
+     2.43:1 on --sumi, far below the 4.5:1 floor. Use `-text` for any glyph. */
+  --semantic-error: rgb(var(--semantic-error-rgb));
+  --semantic-error-text: rgb(
+    var(--semantic-error-text-rgb)
+  ); /* 6.81:1 on sumi / 6.39:1 on sumi-2 */
+  --semantic-warning: rgb(var(--semantic-warning-rgb));
+  --semantic-warning-text: rgb(
+    var(--semantic-warning-text-rgb)
+  ); /* identical to the base on purpose: #EAB308 already clears
+        AA as a glyph. It exists so every Status tone can use the
+        same `-text` suffix instead of one tone breaking the pattern. */
+  --semantic-success: rgb(var(--semantic-success-rgb));
+  --semantic-success-text: rgb(
+    var(--semantic-success-text-rgb)
+  ); /* 10.81:1 / 10.14:1 */
 
   /* — Typography — see foundations.md for the hard rules on each role — */
-  --font-brush: 'Permanent Marker', cursive;   /* Latin wordmark ONLY — no kanji glyphs */
-  --font-kanji: 'Ma Shan Zheng', cursive;       /* kanji marks ONLY — 元 火 水 土 風 */
-  --font-head: 'Klee One', cursive;             /* headings — covers Latin + inline kanji */
-  --font-body: 'Zen Kaku Gothic New', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-brush:
+    "Permanent Marker", cursive; /* Latin wordmark ONLY — no kanji glyphs */
+  --font-kanji:
+    "Ma Shan Zheng", cursive; /* kanji marks ONLY — 元 火 水 土 風 */
+  --font-head: "Klee One", cursive; /* headings — covers Latin + inline kanji */
+  --font-body: "Zen Kaku Gothic New", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* — Type scale —
+     Sizes below 20px are fixed; display sizes are fluid so one definition
+     covers every viewport (no `sm:` variants). 13px is a hard floor: below
+     that, mono + letter-spacing destroys word-shape recognition. */
+  --text-2xs: 0.8125rem; /* 13px — micro labels: eyebrow, chips, stack keys */
+  --text-xs: 0.875rem; /* 14px — meta, captions, nav, badges */
+  --text-sm: 0.9375rem; /* 15px — secondary copy */
+  --text-base: 1.0625rem; /* 17px — body prose default */
+  --text-md: 1.125rem; /* 18px — lede / emphasised body */
+  --text-lg: 1.25rem; /* 20px — card titles, h3 */
+  --text-xl: 1.5rem; /* 24px — sub-headings */
+  --text-2xl: clamp(1.75rem, 1.45rem + 1.4vw, 2rem); /* 28→32px — section h2 */
+  --text-3xl: clamp(
+    1.9rem,
+    1.4rem + 2.2vw,
+    2.375rem
+  ); /* 30→38px — case-study h1 */
+  --text-4xl: clamp(2.25rem, 1.5rem + 3.4vw, 3.5rem); /* 36→56px — hero h1 */
+
+  /* — Line height — */
+  --leading-display: 1.12;
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65; /* body prose: 17px × 1.65 ≈ 28px */
+
+  /* — Letter spacing — two values, one job each. Replaces the five competing
+     values (0.12/0.14/0.16/0.18em + tracking-wide) that all did the same job. */
+  --tracking-label: 0.1em; /* every uppercase mono label */
+  --tracking-display: -0.015em; /* headings */
 
   /* — Spacing — bias toward more space, not less — */
-  --space-xs: 0.25rem;   /* 4px  — icon + label */
-  --space-sm: 0.5rem;    /* 8px  — tight controls */
-  --space-md: 1rem;      /* 16px — minimum content spacing */
-  --space-lg: 1.5rem;    /* 24px — default between cards */
-  --space-xl: 2rem;      /* 32px — section spacing */
-  --space-2xl: 3rem;     /* 48px — page breaks */
+  --space-xs: 0.25rem; /* 4px  — icon + label */
+  --space-sm: 0.5rem; /* 8px  — tight controls */
+  --space-md: 1rem; /* 16px — minimum content spacing */
+  --space-lg: 1.5rem; /* 24px — default between cards */
+  --space-xl: 2rem; /* 32px — section spacing */
+  --space-2xl: 3rem; /* 48px — page breaks */
 
   /* — Radius — sharp, not soft. See foundations.md — */
-  --radius-sm: 2px;   /* buttons, inputs, chips */
-  --radius-md: 3px;   /* cards, panels */
-  --radius-lg: 6px;   /* modals, hero elements — still restrained */
+  --radius-sm: 2px; /* buttons, inputs, chips */
+  --radius-md: 3px; /* cards, panels */
+  --radius-lg: 6px; /* modals, hero elements — still restrained */
 
-  /* — Motion — one curve for the whole system — */
+  /* — Motion — one curve for the whole system —
+     JS-driven animation (framer-motion et al.) cannot read a CSS variable.
+     Import the matching constants from `motion/motion.ts` instead of
+     hand-typing the bezier — see motion/README.md. */
   --ease-air: cubic-bezier(0.16, 1, 0.3, 1);
-  --duration-fast: 150ms;    /* micro-interactions — button press */
+  --duration-fast: 150ms; /* micro-interactions — button press */
   --duration-default: 400ms; /* standard hover/transition */
-  --duration-slow: 700ms;    /* entrances */
+  --duration-slow: 700ms; /* entrances */
+
+  /* — Background aura —
+     A single fire radial anchored to a section's top corner. See the aura
+     rules in docs/foundations.md before using it: the alpha cap, the corner
+     anchoring and the falloff are all load-bearing. Get one wrong and it
+     reads as "the background is red-tinted", which is the failure mode that
+     got full-page glow banned in the first place (docs/decisions.md).
+     Static only — never animated, never scroll-driven. */
+  --aura-fire: rgb(var(--fire-rgb) / 0.055);
+  --aura-fire-strong: rgb(var(--fire-rgb) / 0.085); /* hero only */
+  --aura-size: 60rem;
 }
 
 /* — Reusable entrance motion (the "Air" behavior — fade + rise) — */
 @keyframes riseIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .rise {
   opacity: 0;
   animation: riseIn var(--duration-slow) var(--ease-air) forwards;
 }
-.rise-d1 { animation-delay: 0.05s; }
-.rise-d2 { animation-delay: 0.18s; }
-.rise-d3 { animation-delay: 0.30s; }
-.rise-d4 { animation-delay: 0.42s; }
+.rise-d1 {
+  animation-delay: 0.05s;
+}
+.rise-d2 {
+  animation-delay: 0.18s;
+}
+.rise-d3 {
+  animation-delay: 0.3s;
+}
+.rise-d4 {
+  animation-delay: 0.42s;
+}
+
+/* — Background aura geometry —
+   Four things keep this from reading as a red-tinted background:
+     1. anchored to the top corner and pushed ~45% off the horizontal edge,
+        so it hugs the corner and never washes the centre column;
+     2. `transparent 68%` — falls off before the section's vertical midpoint,
+        leaving true --sumi where the text actually sits;
+     3. only some sections get one, on alternating sides, so there are
+        genuinely untinted stretches between them (that gap is what makes it
+        read as rhythm while scrolling rather than a wash);
+     4. alpha capped at 0.055 (0.085 on a hero alone).
+   Apply as `class="aura aura-l"` / `aura aura-r`, plus `aura-strong` on a
+   hero. Don't reach for a second hue — see docs/foundations.md. */
+.aura {
+  position: relative;
+  isolation: isolate;
+}
+
+.aura::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  inline-size: min(var(--aura-size), 120vw);
+  aspect-ratio: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at center,
+    var(--aura-fire) 0%,
+    transparent 68%
+  );
+}
+
+.aura-l::before {
+  left: 0;
+  transform: translate(-45%, -40%);
+}
+
+.aura-r::before {
+  right: 0;
+  transform: translate(45%, -40%);
+}
+
+.aura-strong::before {
+  background: radial-gradient(
+    circle at center,
+    var(--aura-fire-strong) 0%,
+    transparent 68%
+  );
+}
+
+/* — Respect reduced-motion —
+   Every entrance in this system is decorative. If the OS asks for reduced
+   motion, land elements in their final state instead of animating them. */
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    opacity: 1;
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

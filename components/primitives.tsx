@@ -1,6 +1,7 @@
 /**
  * GENSO — CORE COMPONENTS
- * Requires tokens/tokens.css imported globally and tailwind.config.js merged.
+ * Requires tokens/tokens.css imported globally and tokens/tailwind-preset.cjs
+ * registered in the project's `presets` array.
  * See docs/foundations.md before adding a new variant.
  */
 
@@ -25,20 +26,25 @@ const buttonStyles: Record<ButtonVariant, string> = {
   primary:
     "bg-fire text-washi px-6 py-3 rounded font-medium shadow-glow-fire-soft " +
     "hover:shadow-glow-fire transition-shadow duration-default ease-air " +
-    "focus:outline-none focus:ring-2 focus:ring-fire focus:ring-offset-2 focus:ring-offset-sumi " +
-    "active:scale-95",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fire focus-visible:ring-offset-2 focus-visible:ring-offset-sumi " +
+    "active:scale-95 disabled:opacity-50 disabled:pointer-events-none",
   air:
     "bg-transparent border-[1.5px] border-air text-air-text px-6 py-3 rounded font-medium " +
     "shadow-glow-air-soft hover:shadow-glow-air hover:bg-air/10 transition-all duration-default ease-air " +
-    "focus:outline-none focus:ring-2 focus:ring-air focus:ring-offset-2 focus:ring-offset-sumi " +
-    "active:scale-95",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-air focus-visible:ring-offset-2 focus-visible:ring-offset-sumi " +
+    "active:scale-95 disabled:opacity-50 disabled:pointer-events-none",
   secondary:
-    "bg-transparent border border-white/[0.18] text-washi px-6 py-3 rounded font-medium " +
+    "bg-transparent border border-line-strong text-washi px-6 py-3 rounded font-medium " +
     "hover:border-washi-dim transition-colors duration-default " +
-    "focus:outline-none focus:ring-2 focus:ring-white/30",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-washi/30 " +
+    "disabled:opacity-50 disabled:pointer-events-none",
 };
 
-export function Button({ variant = "primary", className, ...props }: ButtonProps) {
+export function Button({
+  variant = "primary",
+  className,
+  ...props
+}: ButtonProps) {
   return <button className={cx(buttonStyles[variant], className)} {...props} />;
 }
 
@@ -51,16 +57,23 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   accent?: "water" | "air";
 }
 
-export function Card({ interactive = true, accent = "water", className, ...props }: CardProps) {
-  const glow = accent === "air" ? "hover:shadow-glow-air" : "hover:shadow-glow-water";
-  const border = accent === "air" ? "hover:border-air/40" : "hover:border-water/40";
+export function Card({
+  interactive = true,
+  accent = "water",
+  className,
+  ...props
+}: CardProps) {
+  const glow =
+    accent === "air" ? "hover:shadow-glow-air" : "hover:shadow-glow-water";
+  const border =
+    accent === "air" ? "hover:border-air/40" : "hover:border-water/40";
   return (
     <div
       className={cx(
-        "bg-sumi-2/60 backdrop-blur-md border border-white/10 rounded-md p-6 shadow-lg",
+        "bg-sumi-2/60 backdrop-blur-md border border-line rounded-md p-6 shadow-lg",
         interactive &&
           `${border} ${glow} hover:-translate-y-1 transition-all duration-default ease-air cursor-pointer`,
-        className
+        className,
       )}
       {...props}
     />
@@ -74,27 +87,40 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       className={cx(
-        "bg-sumi-2 border border-white/[0.18] text-washi px-4 py-3 rounded w-full",
+        "bg-sumi-2 border border-line-strong text-washi px-4 py-3 rounded w-full",
         "focus:border-fire focus:shadow-glow-fire-soft focus:outline-none transition-all duration-default",
         "placeholder:text-washi-dim",
-        className
+        className,
       )}
       {...rest}
     />
   );
 }
 
-export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
+export function Label({
+  className,
+  ...props
+}: React.LabelHTMLAttributes<HTMLLabelElement>) {
   return (
     <label
-      className={cx("text-sm font-mono text-washi-dim mb-2 block tracking-wide uppercase", className)}
+      className={cx(
+        "text-sm font-mono text-washi-dim mb-2 block tracking-label uppercase",
+        className,
+      )}
       {...props}
     />
   );
 }
 
-export function ErrorText({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cx("text-sm text-error mt-1", className)} {...props} />;
+export function ErrorText({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement>) {
+  // text-error-text, not text-error: the base --semantic-error (#AA0000) is
+  // 2.43:1 on ink and effectively invisible as a glyph.
+  return (
+    <p className={cx("text-sm text-error-text mt-1", className)} {...props} />
+  );
 }
 
 /* ----------------------------------- Badge ----------------------------------- */
@@ -117,9 +143,9 @@ export function Badge({
   return (
     <span
       className={cx(
-        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono tracking-wide",
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono tracking-label",
         badgeTone[tone],
-        className
+        className,
       )}
       {...props}
     />
@@ -129,14 +155,17 @@ export function Badge({
 /* ---------------------------------- Status ---------------------------------- */
 /* Semantic status pills — separate axis from element Badges. See
    foundations.md on why --fire and --semantic-error are distinct tokens
-   even though they share a hex value. */
+   even though they share a hex value.
+
+   Every tone uses its `-text` token for the glyph. The base semantic colors
+   are fills and borders only — see the note in tokens.css. */
 
 type StatusTone = "error" | "warning" | "success";
 
 const statusTone: Record<StatusTone, string> = {
-  error: "bg-error/[0.14] text-fire-text border-error/30",
-  warning: "bg-warning/[0.14] text-warning border-warning/30",
-  success: "bg-success/[0.14] text-[#4ADE80] border-success/30",
+  error: "bg-error/[0.14] text-error-text border-error/30",
+  warning: "bg-warning/[0.14] text-warning-text border-warning/30",
+  success: "bg-success/[0.14] text-success-text border-success/30",
 };
 
 export function Status({
@@ -151,9 +180,9 @@ export function Status({
   return (
     <span
       className={cx(
-        "inline-flex items-center gap-2 px-3 py-1.5 rounded text-xs font-mono tracking-wide border",
+        "inline-flex items-center gap-2 px-3 py-1.5 rounded text-xs font-mono tracking-label border",
         statusTone[tone],
-        className
+        className,
       )}
     >
       <span className="w-1.5 h-1.5 rounded-full bg-current" />
@@ -176,11 +205,19 @@ export function CompareRow({
   return (
     <div
       className={cx(
-        "flex items-center gap-3 text-sm px-3.5 py-2.5 rounded-md border border-white/10",
-        isOld ? "text-washi-dim line-through decoration-error/50" : "text-washi"
+        "flex items-center gap-3 text-sm px-3.5 py-2.5 rounded-md border border-line",
+        isOld
+          ? "text-washi-dim line-through decoration-error/50"
+          : "text-washi",
       )}
     >
-      <span className={cx("font-mono text-sm w-4 flex-shrink-0", isOld ? "text-error" : "text-success")}>
+      <span
+        className={cx(
+          "font-mono text-sm w-4 flex-shrink-0",
+          isOld ? "text-error-text" : "text-success-text",
+        )}
+        aria-hidden="true"
+      >
         {isOld ? "✕" : "✓"}
       </span>
       {children}

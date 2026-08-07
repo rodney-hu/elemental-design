@@ -1,0 +1,45 @@
+{
+  "name": "elemental-design",
+  "version": "0.4.0",
+  "description": "Genso (元素) — Rodney's personal design system. Tokens, primitives, layout shells, and motion language.",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "tokens",
+    "components",
+    "layout",
+    "motion",
+    "assets",
+    "docs"
+  ],
+  "exports": {
+    "./tokens.css": "./tokens/tokens.css",
+    "./fonts.css": "./tokens/fonts.css",
+    "./tailwind": "./tokens/tailwind-preset.cjs",
+    "./primitives": "./components/primitives.tsx",
+    "./shells": "./layout/shells.tsx",
+    "./motion": "./motion/motion.ts",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "check": "node scripts/check-tokens.mjs"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "tailwindcss": ">=3.4"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "react": "^19.2.8",
+    "typescript": "^7.0.2"
+  }
+}

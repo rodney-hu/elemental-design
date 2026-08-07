@@ -64,10 +64,8 @@ defined in tokens.css. Sizes below 20px are fixed; display sizes are
 fluid `clamp()` so one definition covers every viewport and no `sm:`
 heading variants are needed. Body copy is `--text-base` (17px).
 
-**Not yet ported into this repo's own tokens.css** — it currently lives
-in gtm-portfolio's copy. Port it here so the next project inherits it,
-along with the `--*-rgb` channel-triplet fix (see the entry on Tailwind
-opacity modifiers).
+Ported into this repo's `tokens.css` in v0.4, along with the channel-triplet
+fix — see the entries below.
 
 ---
 
@@ -88,6 +86,10 @@ it just hadn't been applied to the semantic axis.
 labels. The new value sits level with `--water-text` (6.8:1) so the
 accent tints are internally consistent.
 
+`--semantic-warning-text` also exists, deliberately identical to its base —
+`#EAB308` already clears AA as a glyph. It's there so every Status tone uses
+the same `-text` suffix instead of one tone breaking the pattern.
+
 Rule of thumb: any token that will ever be a glyph needs ≥4.5:1 against
 both `--sumi` and `--sumi-2`, and ≥7:1 if it renders below 15px.
 
@@ -100,6 +102,54 @@ a readability investigation chasing colour when the cause was rendering.
 Leave the default subpixel antialiasing.
 
 ---
+
+**The system is installed as a package, not copied file-by-file.**
+The original quick-start said "copy `tokens.css` and `tailwind.config.js`
+into the project." That is what broke it. Building `gtm-portfolio` surfaced
+three real bugs (see the three entries below); all three were fixed *in the
+portfolio* and none flowed back, so within one project cycle the "source of
+truth" was the more broken, less accessible, less complete copy. Copying has
+no path back upstream, so drift is guaranteed the first time anyone patches a
+bug under deadline pressure — which is exactly what happened. The system now
+ships a `package.json` with an exports map, and the Tailwind config is a
+*preset* (Tailwind's own mechanism for shared config that consumers extend
+rather than duplicate). One copy of every value, everywhere.
+
+**Colors are authored once, as RGB channel triplets.**
+Tailwind opacity modifiers (`bg-air/10`, `border-water/40`) cannot compose an
+alpha channel onto an opaque `var(--fire)` hex value — the class silently
+resolves to nothing. `primitives.tsx` had been using those modifiers since
+v0.2 against a config that could not satisfy them. The portfolio's fix was to
+add a parallel set of `--fire-rgb` triplets *alongside* the hex values, which
+worked but created a second problem: two representations of every color to
+keep in sync by hand, forever. Resolved by making the triplet the only
+authored value and deriving everything else from it —
+`--fire: rgb(var(--fire-rgb))`, `--fire-soft: rgb(var(--fire-rgb) / 0.18)`.
+One number per color, and both plain CSS and Tailwind alpha work.
+
+**`--line` / `--line-strong` are wired into Tailwind, not just defined.**
+Both tokens existed from v0.1 but were never added to the Tailwind config, so
+every component reaching for a hairline border hand-typed
+`border-white/[0.18]` instead — violating the system's own "never hand-type a
+color" rule in three primitives and two shells. Now exposed as `border-line`
+and `border-line-strong`, and `npm run check` fails on a `white/xx` literal.
+
+**JS animation gets its own constants file, mirrored from the CSS tokens.**
+`--ease-air` is unreachable from framer-motion, GSAP, or the Web Animations
+API — none of them can read a CSS variable. The result in production: one
+component hand-typed the bezier as a magic `[0.16, 1, 0.3, 1]` array, another
+used `ease: "easeInOut"` (a second easing curve, which `foundations.md`
+explicitly forbids), and three components invented durations — 0.3s and 0.45s
+— that matched none of the three sanctioned values. None of it was visible in
+review. `motion/motion.ts` now exports `easeAir`, `duration`, and ready-made
+`riseIn` / `riseInOnScroll` transitions, and `npm run check` asserts the JS
+values still equal the CSS ones.
+
+**Reduced motion is honored at the system level, not per project.**
+Every entrance in this system is decorative, so there was no reason to make
+each project remember to gate it. `tokens.css` now zeroes animation and
+transition durations under `prefers-reduced-motion: reduce`, and
+`motion.ts` exports a `prefersReducedMotion()` helper for the JS side.
 
 **Ambient background glow — removed.**
 *(Superseded in part — see "Background glow — partially reinstated" above.)*

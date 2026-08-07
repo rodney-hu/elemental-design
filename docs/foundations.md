@@ -7,6 +7,22 @@ explains *why*, this file says *what to actually do*.
 
 - Never hand-type a hex code in a component. If the color you need isn't
   a token in `tokens/tokens.css`, add it there first, then reference it.
+  `npm run check` enforces this — it fails on a hex literal or a
+  `border-white/10`-style literal in `components/` or `layout/`.
+- Every color is authored **once**, as an RGB channel triplet
+  (`--fire-rgb: 170 0 0`). The plain color, the soft fill and both glows
+  derive from it. To change a color, change the triplet — never edit a
+  derived value, and never add a second representation of the same color.
+- Opacity modifiers (`bg-fire/40`) only work on colors the Tailwind preset
+  exposes with `<alpha-value>`. The `-soft` and `-glow` tokens are
+  fixed-alpha by design and cannot take one — use them as-is.
+- Neutral hairlines and borders use `border-line` / `border-line-strong`.
+  Never `border-white/10`.
+- Anything rendered as **text** uses a `-text` token — `--fire-text` for
+  elements, `--semantic-error-text` / `--semantic-warning-text` /
+  `--semantic-success-text` for status. The base colors are fills and
+  borders only: `--semantic-error` is 2.43:1 on ink, far below the 4.5:1
+  AA floor, and is effectively invisible as a glyph.
 - Fire (`--fire`, `#AA0000`) is the only color allowed on a primary CTA.
   It's matched to the real logo — don't drift it without checking the
   logo first.
@@ -69,6 +85,20 @@ explains *why*, this file says *what to actually do*.
 - Entrances fade + rise (`riseIn` keyframe in `tokens/tokens.css`).
   Nothing bounces, nothing overshoots — see `motion/README.md` for the
   full per-element motion language.
+- Durations come from the three tokens only: `--duration-fast` (150ms),
+  `--duration-default` (400ms), `--duration-slow` (700ms). If the value
+  you want isn't one of the three, the answer is one of the three.
+- **JS animation imports its constants; it never hand-types them.**
+  framer-motion, GSAP and the Web Animations API cannot read a CSS
+  variable, so `motion/motion.ts` mirrors the CSS tokens —
+  `import { easeAir, duration, riseInOnScroll } from "elemental-design/motion"`.
+  A hand-typed `[0.16, 1, 0.3, 1]` or `ease: "easeInOut"` is a bug, not a
+  shortcut: that's how a second easing curve and two unsanctioned
+  durations reached production unnoticed. `npm run check` asserts the JS
+  constants still match the CSS ones.
+- Every entrance is decorative, so all of it is gated on
+  `prefers-reduced-motion` at the token level. Use
+  `prefersReducedMotion()` from `motion/motion.ts` for the JS side.
 - The page background **never animates**. No keyframes on the shell, no
   scroll-driven effects.
 - The page background **may carry a static corner aura** — one hue

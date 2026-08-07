@@ -2,7 +2,53 @@
 
 Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
-## v0.3 — current
+## v0.4 — current
+
+First version shaped by a real shipped project (`gtm-portfolio` /
+rodneyhu.com) rather than by concept work. Everything here is either a bug
+that surfaced building it or a gap that forced that project to invent its own
+solution locally.
+
+**Distribution**
+- The system is now an installable package (`package.json` + exports map)
+  instead of a set of files to copy. Copying was the root cause of every bug
+  below surviving in the source of truth after being fixed downstream.
+- `tokens/tailwind.config.js` → `tokens/tailwind-preset.cjs`, consumed via
+  Tailwind's `presets` array. Projects extend it; they never duplicate it.
+- `tokens/fonts.css` added — `@font-face` rules resolving to the packaged
+  `.woff2` files, so projects stop reconstructing font loading by hand.
+- `scripts/check-tokens.mjs` (`npm run check`) — zero-dependency integrity
+  check covering every bug class below, so none of them can return silently.
+- `showcase/index.html` re-synced: its inlined palette (it is deliberately a
+  standalone, network-free file) had fallen two versions behind and was still
+  showing the old `--fire-text` and `--washi-dim`. Now covered by the check.
+
+**Fixed**
+- Tailwind opacity modifiers (`bg-air/10`, `border-water/40`) silently
+  resolved to nothing. Colors are now authored once as RGB channel triplets
+  with everything derived from them, so alpha composition works and there is
+  still only one number per color to maintain.
+- `ErrorText` rendered `--semantic-error` at 2.43:1 contrast. Added
+  `--semantic-error-text` (6.81:1), `--semantic-success-text` (10.81:1) and
+  `--semantic-warning-text`; every glyph now uses a `-text` token.
+- `--fire-text` brightened `#E2574A` → `#F0776A` (4.79:1 → 6.36:1).
+- `--washi-dim` lightened `#C8C1B3` → `#D9D3C7`.
+- `--line` / `--line-strong` wired into Tailwind as `border-line` /
+  `border-line-strong`; removed the hand-typed `border-white/[0.18]` and
+  `border-white/10` literals from all primitives and shells.
+- Focus rings moved from `focus:` to `focus-visible:`, so they stop firing on
+  mouse clicks. Added `disabled:` styling to Button.
+
+**Added**
+- Full type scale: `--text-2xs`…`--text-4xl` (display sizes fluid via
+  `clamp()`), `--leading-*`, and `--tracking-label` / `--tracking-display`.
+  Previously the system had no typography tokens at all.
+- `motion/motion.ts` — `easeAir`, `duration`, `riseIn`, `riseInOnScroll`,
+  `prefersReducedMotion()` for framer-motion and other JS animation, which
+  could not read the CSS motion tokens.
+- `prefers-reduced-motion` handling in `tokens.css`.
+
+## v0.3
 - Palette restructured to exactly 6 colors: 2 neutrals + 4 elements
   (fire/water/earth/air), one color and one behavior each.
 - Earth changed from brown to green.

@@ -1,0 +1,100 @@
+/**
+ * GENSO — FONT LOADING
+ *
+ * Self-hosted, subsetted woff2. Never link Google's CDN — CDN font loading
+ * silently failed in a sandboxed preview once and broke every custom font on
+ * the page with no visible error. See docs/decisions.md.
+ *
+ * Paths are relative to this file, so a bundler (Vite, Next, webpack)
+ * resolves and emits the woff2 files automatically when you import this from
+ * the package — no copying font files into each project by hand:
+ *
+ *   @import "elemental-design/fonts.css";
+ *   @import "elemental-design/tokens.css";
+ *
+ * ⚠️ These fonts are SUBSET, not complete. Latin families cover printable
+ * ASCII plus an em dash; the kanji families cover only the specific glyphs
+ * used so far (元 素 墨 紙 朱 金 水 土 風 火). A new kanji character will
+ * silently fall back to a system font — re-subset it first. See
+ * assets/fonts/README.md for the pyftsubset command.
+ */
+
+@font-face {
+  font-family: "Permanent Marker";
+  src: url("../assets/fonts/marker400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Ma Shan Zheng";
+  src: url("../assets/fonts/mashan400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Klee One";
+  src: url("../assets/fonts/klee400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Klee One";
+  src: url("../assets/fonts/klee600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  src: url("../assets/fonts/zen300.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  src: url("../assets/fonts/zen400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  src: url("../assets/fonts/zen500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  src: url("../assets/fonts/zen700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("../assets/fonts/jbmono400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("../assets/fonts/jbmono500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}

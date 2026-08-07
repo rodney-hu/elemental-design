@@ -4,6 +4,37 @@ One easing curve for the whole system (`--ease-air`, an ease-out curve).
 Every animation below uses it. Don't introduce a second curve without
 logging why in `docs/decisions.md`.
 
+## CSS vs JS
+
+The curve and the three durations exist in two places, kept identical:
+
+| | Source | Use for |
+|---|---|---|
+| CSS | `tokens/tokens.css` — `--ease-air`, `--duration-*` | Tailwind classes, plain CSS, the `.rise` utility |
+| JS | `motion/motion.ts` — `easeAir`, `duration`, `riseIn` | framer-motion, GSAP, Web Animations API |
+
+JS animation libraries cannot read a CSS variable, so **import the
+constants — never hand-type the bezier**:
+
+```ts
+import { easeAir, duration, riseInOnScroll } from "elemental-design/motion";
+
+<motion.div transition={{ duration: duration.default, ease: easeAir }} />
+<motion.section {...riseInOnScroll} />        // scroll-triggered fade + rise
+```
+
+A hand-typed `[0.16, 1, 0.3, 1]`, or an `ease: "easeInOut"`, is a bug — that
+is exactly how a second easing curve and two unsanctioned durations (0.3s,
+0.45s) reached production without anyone noticing. `npm run check` asserts
+the JS constants still equal the CSS ones.
+
+Durations are only ever `fast` (150ms), `default` (400ms), or `slow` (700ms).
+If the value you want isn't one of the three, the answer is one of the three.
+
+Every entrance here is decorative and is gated on `prefers-reduced-motion` in
+`tokens.css`. For JS-driven animation, gate it yourself with
+`prefersReducedMotion()` from `motion/motion.ts`.
+
 Each element has one signature motion behavior. When adding a new
 animation, find its element first — that decides how it should move.
 
@@ -67,4 +98,6 @@ nothing overshoots — air fills space, it doesn't spring into it.
 - A documented water-ripple utility class (currently only exists inline
   in `Card`'s CSS-in-JS — worth extracting once a second component needs it)
 - A fire-pulse utility for anything that needs recurring (not just
-  hover) urgency, e.g. an unread-count badge
+  hover) urgency, e.g. an unread-count badge. Note this would be the first
+  thing in the system that loops — check it against the "nothing loops or
+  auto-plays" rule above before building it.
