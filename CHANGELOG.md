@@ -2,7 +2,46 @@
 
 Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
-## v0.4 — current
+## v0.5 — current
+
+"Void, Halo, Fourfold." Adds the pieces the system was missing to express
+mastery of all four elements, without loosening the restraint that makes it
+work. Genso's palette and its martial framing already pointed here — this
+pass builds the parts that were only implied.
+
+**Added**
+- `--void` (#000000) as an opt-in **stage**, scoped via a `.void` class.
+  Ink stays the reading surface. `--line` re-binds stronger inside the scope.
+- **Halos** (`--halo-*`, `.halo-fire|water|earth|air`) — object-bound glow,
+  a separate namespace from the background-bound `--aura-*`, with its own
+  (much higher) alpha budget. The rule is now "the background does not glow;
+  objects do."
+- `components/marks.tsx` — four **original** element marks (geometric) plus
+  the kanji register, in one `ElementMark`, and a `Silhouette` treatment.
+  Exported as `elemental-design/marks`.
+- `Fourfold` in `layout/shells.tsx` — the one sanctioned place all four
+  accents coexist. Arity and canonical order are compile-enforced.
+- **The Avatar principle** in `philosophy.md` and **the Fourfold Rule** in
+  `foundations.md`, reconciling "master of all four" with "one accent leads
+  per screen."
+- Showcase section 05 demonstrating all of the above.
+
+**Fixed**
+- `showcase/index.html` had no `prefers-reduced-motion` guard — it inlines
+  its own CSS and never inherited the one in `tokens.css`, so it animated
+  regardless of the OS setting.
+- `assets/fonts/README.md` understated the Ma Shan Zheng subset: the kanji
+  流 is included, not just the hiragana of 流れるように. Also documents that
+  `document.fonts.check()` is unusable for glyph coverage.
+- `Card` accepts all four elements as `accent`, not just water/air.
+- Stale "Concept v0.3 — not yet shipped" banner in the showcase.
+
+**Guard** — five new checks in `npm run check`: WCAG contrast for every
+`-text` tint against *both* ink and void; aura/halo alpha caps enforced
+numerically rather than in prose; element-mark drawing rules; kanji-subset
+membership; and `.halo` on a page-level element.
+
+## v0.4
 
 First version shaped by a real shipped project (`gtm-portfolio` /
 rodneyhu.com) rather than by concept work. Everything here is either a bug

@@ -54,8 +54,24 @@ export function Button({
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   interactive?: boolean;
-  accent?: "water" | "air";
+  /* All four elements, so a Fourfold cell can carry its own accent. Water
+     stays the default — the glass/pooling behaviour is water's by rights. */
+  accent?: "fire" | "water" | "earth" | "air";
 }
+
+const cardGlow: Record<NonNullable<CardProps["accent"]>, string> = {
+  fire: "hover:shadow-glow-fire",
+  water: "hover:shadow-glow-water",
+  earth: "hover:shadow-glow-earth",
+  air: "hover:shadow-glow-air",
+};
+
+const cardBorder: Record<NonNullable<CardProps["accent"]>, string> = {
+  fire: "hover:border-fire/40",
+  water: "hover:border-water/40",
+  earth: "hover:border-earth/40",
+  air: "hover:border-air/40",
+};
 
 export function Card({
   interactive = true,
@@ -63,10 +79,8 @@ export function Card({
   className,
   ...props
 }: CardProps) {
-  const glow =
-    accent === "air" ? "hover:shadow-glow-air" : "hover:shadow-glow-water";
-  const border =
-    accent === "air" ? "hover:border-air/40" : "hover:border-water/40";
+  const glow = cardGlow[accent];
+  const border = cardBorder[accent];
   return (
     <div
       className={cx(

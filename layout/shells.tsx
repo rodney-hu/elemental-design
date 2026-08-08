@@ -4,7 +4,79 @@
  */
 
 import * as React from "react";
-import { cx } from "../components/primitives";
+import { Card, cx } from "../components/primitives";
+import { ElementMark, type Element } from "../components/marks";
+
+/* ---------------------------------- Fourfold ---------------------------------- */
+/* The one place all four accents are allowed to coexist — the Avatar
+   principle made structural. See docs/philosophy.md and the Fourfold Rule in
+   docs/foundations.md before using it.
+
+   Mastery is the SET, not the mix: four peers, one element each, read as a
+   claim about range. It is not four accents competing inside one object,
+   which is still banned.
+
+   The 4-tuple type is deliberate — arity is the rule most likely to be
+   broken by accident, so the compiler enforces it rather than a doc. */
+
+export interface FourfoldCell {
+  /* Canonical order is fixed by the component, not the caller — pass cells
+     in any order and they render Fire → Water → Earth → Air. */
+  element: Element;
+  title: string;
+  children?: React.ReactNode;
+}
+
+export type FourfoldCells = [
+  FourfoldCell,
+  FourfoldCell,
+  FourfoldCell,
+  FourfoldCell,
+];
+
+const CANONICAL: Element[] = ["fire", "water", "earth", "air"];
+
+export function Fourfold({
+  cells,
+  kanji = false,
+  className,
+}: {
+  cells: FourfoldCells;
+  /** Render the kanji register in each cell instead of the line marks. */
+  kanji?: boolean;
+  className?: string;
+}) {
+  const ordered = CANONICAL.map((el) =>
+    cells.find((c) => c.element === el),
+  ).filter(Boolean) as FourfoldCell[];
+
+  if (ordered.length !== 4) {
+    throw new Error(
+      "Fourfold requires exactly one cell per element (fire, water, earth, air).",
+    );
+  }
+
+  return (
+    <div className={cx("grid gap-5 sm:grid-cols-2", className)}>
+      {ordered.map((cell, i) => (
+        <Card
+          key={cell.element}
+          accent={cell.element}
+          interactive={false}
+          /* Peers: same size, same weight, same glow. Emphasising one turns
+             the set back into four competing accents. */
+          className={cx("flex h-full flex-col items-start gap-4 rise", `rise-d${i + 1}`)}
+        >
+          <ElementMark element={cell.element} kanji={kanji} halo label={null} />
+          <h3 className="font-head text-lg leading-snug text-washi">
+            {cell.title}
+          </h3>
+          {cell.children}
+        </Card>
+      ))}
+    </div>
+  );
+}
 
 /* ----------------------------- Sidebar Navigation ----------------------------- */
 

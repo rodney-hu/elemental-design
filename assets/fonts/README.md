@@ -26,10 +26,37 @@ total for all 10 files) but has a real consequence:
   English text will render fine. Accented characters (é, ñ, etc.) will
   not.
 - **Kanji fonts** (mashan, and klee's kanji glyphs) are subset to only
-  the exact characters used so far: 元 素 墨 紙 朱 金 水 土 風 火 (plus
-  hiragana in 流れるように for Ma Shan Zheng). **A new kanji character
-  used in a new project will not render** and will silently fall back
-  to a system font.
+  the exact characters used so far: 元 素 墨 紙 朱 金 水 土 風 火 — plus
+  the full 流れるように sample for Ma Shan Zheng, **including the kanji
+  流** and the hiragana れ る よ う に. **A new kanji character used in a
+  new project will not render** and will silently fall back to a system
+  font.
+
+`npm run check` now enforces this list, so a stray glyph fails the build
+instead of failing silently. The canonical set lives in
+`scripts/check-tokens.mjs` — keep the two in sync.
+
+## Verifying glyph coverage
+
+Do **not** use `document.fonts.check()`. It reports whether a matching
+font *face* is loaded, not whether it contains the glyph, so it returns
+`true` for characters the font does not have (verified: it claims 氷 is
+available when it is not).
+
+Measure widths instead — render the character at a large size in the
+kanji font versus a plain fallback and compare. Identical widths mean it
+fell back:
+
+```js
+const w = (ch, font) => {
+  const s = document.createElement('span');
+  s.style.cssText = `position:absolute;visibility:hidden;font-size:100px;font-family:${font}`;
+  s.textContent = ch;
+  document.body.appendChild(s);
+  const r = s.getBoundingClientRect().width; s.remove(); return r;
+};
+w('流', '"Ma Shan Zheng", monospace') !== w('流', 'monospace'); // true = present
+```
 
 ## Adding a new kanji character
 

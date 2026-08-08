@@ -18,6 +18,33 @@ explains *why*, this file says *what to actually do*.
   fixed-alpha by design and cannot take one — use them as-is.
 - Neutral hairlines and borders use `border-line` / `border-line-strong`.
   Never `border-white/10`.
+- **Pure black is a stage, not a background.** `--void` is opt-in via the
+  `.void` class, for element marks, silhouettes and Fourfold sets. `--sumi`
+  ink stays the reading surface — don't set void as a page default. Inside
+  `.void`, `--line` re-binds stronger (0.14 / 0.24) because a hairline at
+  ink strength starts dissolving on black; that happens automatically, so
+  keep using plain `border-line`.
+
+### The Fourfold Rule
+
+The one place all four accents may coexist. All five conditions are
+required — miss any one and it stops being a set and becomes four accents
+competing, which is still banned:
+
+1. **Exactly four cells**, one element each, in canonical order
+   Fire → Water → Earth → Air.
+2. **One accent per cell** — its mark, its `-text` label, its halo. No
+   accent crosses a cell boundary.
+3. **At most one Fourfold per page**, and never in the same viewport as a
+   primary CTA.
+4. **Cells are peers** — equal size, weight and glow. Emphasise one and
+   the rule is broken.
+5. **Outside the set, the page still has exactly one leading accent**
+   (fire by default).
+
+Use `Fourfold` from `layout/shells.tsx`; it enforces the arity and the
+canonical order for you.
+
 - Anything rendered as **text** uses a `-text` token — `--fire-text` for
   elements, `--semantic-error-text` / `--semantic-warning-text` /
   `--semantic-success-text` for status. The base colors are fills and
@@ -77,6 +104,25 @@ explains *why*, this file says *what to actually do*.
 - Layouts lean asymmetric over centered where the content allows it —
   matches the *ma* (negative space) principle in `philosophy.md`.
 
+### Element marks
+
+Two registers ship, both in `components/marks.tsx`:
+
+- **Geometric** — the line marks, for UI (badges, cells, nav).
+- **Kanji** — 火 水 土 風, for brand and formal moments. Limited to the
+  font subset; see `assets/fonts/README.md` before using any other glyph.
+
+Drawing rules for the geometric set, all enforced by `npm run check`:
+
+- One `0 0 24 24` grid, built on 4-unit modules.
+- `stroke-width: 1.5`, `stroke="currentColor"` — never a hardcoded color.
+  The mark inherits its element from the parent's text color.
+- **Butt caps, miter joins.** Round caps contradict the sharp-corner rule.
+- No fills, and **no circle enclosure** — that last one is deliberate, see
+  `decisions.md`.
+- Each mark is *open* in the way its element is open. That gap is the
+  design, not a simplification; don't close it.
+
 ## Motion
 
 - One easing curve for the whole system: `--ease-air`
@@ -99,6 +145,18 @@ explains *why*, this file says *what to actually do*.
 - Every entrance is decorative, so all of it is gated on
   `prefers-reduced-motion` at the token level. Use
   `prefersReducedMotion()` from `motion/motion.ts` for the JS side.
+- **The background does not glow; objects do.** Two different things with
+  deliberately different budgets:
+  - an **aura** (`--aura-*`) tints a *background*. One hue (fire), alpha
+    ≤0.055 (0.085 on a hero), corner-anchored. Rules below.
+  - a **halo** (`--halo-*`) sits behind a *mark or figure*, bounded by that
+    object's own box. Any element, alpha up to 0.30 (air 0.24) — it may be
+    far brighter precisely because it is emphasis on a thing the user is
+    looking at, not decoration on a page.
+
+  A halo on a `<section>`, `<main>` or the shell is the banned full-page
+  wash under a new name; `npm run check` fails on it. Both are static —
+  never animated.
 - The page background **never animates**. No keyframes on the shell, no
   scroll-driven effects.
 - The page background **may carry a static corner aura** — one hue

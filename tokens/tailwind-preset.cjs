@@ -31,6 +31,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        void: "rgb(var(--void-rgb) / <alpha-value>)",
         sumi: "rgb(var(--sumi-rgb) / <alpha-value>)",
         "sumi-2": "rgb(var(--sumi-2-rgb) / <alpha-value>)",
         washi: "rgb(var(--washi-rgb) / <alpha-value>)",
@@ -105,6 +106,11 @@ module.exports = {
       borderColor: {
         line: "var(--line)",
         "line-strong": "var(--line-strong)",
+        // --line re-binds inside `.void` (see tokens.css), so plain
+        // `border-line` is already correct there. These two are only for
+        // reaching for a void-strength hairline OUTSIDE a .void scope.
+        "line-void": "rgb(var(--washi-rgb) / 0.14)",
+        "line-void-strong": "rgb(var(--washi-rgb) / 0.24)",
       },
 
       borderRadius: {

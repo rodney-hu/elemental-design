@@ -6,6 +6,80 @@ nobody (including future-you) has to re-derive it from scratch.
 
 ---
 
+**Pure black is a stage, not a background.**
+The reference material that prompted v0.5 is all on `#000000`, and the
+temptation was to move `--sumi` there. Rejected: ink/paper is the metaphor
+the whole system is built on, and long reading passages on true black are
+harsher. Instead `--void` is opt-in via a `.void` class, for the moments
+where a mark, silhouette or Fourfold has to carry — everything else stays on
+ink. Verified while deciding: the four `-text` tints all *gain* contrast on
+black (fire 7.5:1, water 7.5:1, earth 9.2:1, air 10.9:1), so the stage costs
+nothing in legibility. The base colours get worse, though — `--fire` is
+2.7:1 and `--water` 4.0:1 on `#000` — which is why "base colours are fills
+only" stopped being a style rule and became a guarded one. `--line` also
+re-binds inside `.void` (0.09 → 0.14): a hairline at ink strength starts
+dissolving on black, and cards lose their edge.
+
+**Object glow ("halo") is a separate namespace from background glow ("aura").**
+The wanted look — a glowing element mark on black — reads like a direct
+contradiction of "the page background does not glow." It isn't, and the
+distinction is worth naming precisely because it's the thing most likely to
+be eroded later. An *aura* tints a background: one hue, corner-anchored,
+alpha ≤0.055, because at that scale anything more reads as "the background
+is tinted." A *halo* is bound to an object's own box, so it can go to 0.30
+without ever washing a page. Same physics, different budget, enforced
+numerically by `npm run check` — and applying `.halo` to a `<section>` or
+`<main>` is a hard failure, because that is exactly how the banned full-page
+wash would come back wearing a new name.
+
+**The Fourfold rule — how "master of all four elements" survives contact
+with "one accent leads per screen."**
+These two genuinely conflict, and the resolution came from the reference
+images: they never mix four accents inside one object. They show four
+*panels*, one element each, that read as a set. So mastery is expressed as
+composition, not saturation — a Fourfold is four peers of equal size, weight
+and glow, and it is a claim about range. Everywhere outside it, one accent
+still leads. The rule has five conditions (see `foundations.md`) and the
+`Fourfold` component enforces the two most breakable ones — arity and
+canonical order — in the type system rather than in prose. The failure mode
+being ruled out is the tempting one: sprinkling all four accents across a
+page because the palette has four colours. That reads as indecision, not
+range.
+
+**Element marks are original, and structured to be unlike the obvious source.**
+The v0.5 direction was prompted by Avatar: The Last Airbender. That series is
+Nickelodeon/Paramount IP and this system runs a commercial site, so its
+element symbols are not usable — and copying them would also make the system
+someone else's rather than Rodney's. The marks in `components/marks.tsx` are
+drawn from Genso's own vocabulary instead: the shoji grid, sharp corners,
+single-weight line. Every ATLA glyph is circle-enclosed and spiral-based;
+none of these is, and `npm run check` fails on a `<circle>` in the mark file
+to keep it that way. Each mark is *open* in the way its element is open —
+fire's apex is cut with the stroke still travelling through it, air is only
+the four corners of a square with the edges never drawn. **Do not "improve" a
+mark back toward the source.** Known and accepted: air's four-corner form is
+close to the common "fullscreen/scan" UI idiom, which is tolerable because
+element marks always appear in element contexts with a label.
+
+**The showcase needed its own reduced-motion guard.**
+`tokens.css` gates every entrance on `prefers-reduced-motion`, but
+`showcase/index.html` inlines its own CSS rather than importing tokens, so it
+never inherited that block and had been animating regardless of the setting.
+Fixed by duplicating the guard there. This is the recurring cost of the
+showcase being deliberately standalone — the same reason its palette needs
+check #5.
+
+**`document.fonts.check()` cannot verify glyph coverage.**
+Worth recording because it looks like the right API and is confidently wrong:
+it reports whether a matching font *face* is loaded, not whether that face
+contains the glyph, so it returned `true` for 氷 — a character definitely not
+in the subset. Measure rendered width against a fallback instead. This came
+up verifying that 流 (in the 流れるように sample) really is in the Ma Shan
+Zheng subset; it is, and `assets/fonts/README.md` had understated the subset
+as "hiragana in 流れるように" when the kanji is included too.
+
+---
+
 **Background glow — partially reinstated, as corner-anchored section auras.**
 Supersedes the "ambient background glow — removed" entry below, but only
 half of it. First used on rodneyhu.com (gtm-portfolio).

@@ -23,6 +23,7 @@
   /* — Channel triplets — the only place a colour is actually authored — */
 
   /* Neutrals */
+  --void-rgb: 0 0 0;
   --sumi-rgb: 19 17 16;
   --sumi-2-rgb: 27 24 21;
   --washi-rgb: 243 238 228;
@@ -47,6 +48,11 @@
   --semantic-success-text-rgb: 74 222 128;
 
   /* — Neutrals — */
+  --void: rgb(
+    var(--void-rgb)
+  ); /* pure black — a STAGE for marks and figures, not a
+                              background. Opt in with `.void`; never set it as
+                              the page default. See decisions.md. */
   --sumi: rgb(var(--sumi-rgb)); /* ink — primary background */
   --sumi-2: rgb(var(--sumi-2-rgb)); /* panel base, before glass tint / hover */
   --washi: rgb(var(--washi-rgb)); /* paper — primary text, incl. body prose */
@@ -185,6 +191,42 @@
   --aura-fire: rgb(var(--fire-rgb) / 0.055);
   --aura-fire-strong: rgb(var(--fire-rgb) / 0.085); /* hero only */
   --aura-size: 60rem;
+
+  /* — Element halo — the OBJECT-bound counterpart to --aura-* —
+     The distinction is the whole reason this is allowed to be bright:
+
+       aura  = tints a BACKGROUND. One hue (fire). Capped at 0.055.
+       halo  = sits behind a MARK or FIGURE, bounded by that object's box.
+               Any element. May reach 0.30, because it is emphasis on a
+               thing the user is looking at — not decoration on a page.
+
+     "The background does not glow; objects do" (foundations.md). A halo on
+     a <section> or <main> is the banned full-page wash wearing a new name;
+     `npm run check` fails on it.
+
+     Static only — never animated. */
+  --halo-fire: rgb(var(--fire-rgb) / 0.3);
+  --halo-water: rgb(var(--water-rgb) / 0.3);
+  --halo-earth: rgb(var(--earth-rgb) / 0.3);
+  --halo-air: rgb(
+    var(--air-rgb) / 0.24
+  ); /* capped below the others, per the --air-glow precedent —
+                              gold at full strength reads garish fast */
+  --halo-size: 12rem;
+}
+
+/* — Void stage —
+   Opt-in pure black, for element marks, silhouettes and Fourfold sets.
+   Scoped rather than global on purpose: ink stays the reading surface, and
+   black is reserved for the moments where the glow has to carry.
+
+   The --line re-bind is load-bearing. `washi / 0.09` composites to about
+   rgb(22 21 21) on black versus rgb(39 37 35) on --sumi, so hairlines lose
+   a little contrast exactly where cards most need an edge to survive. */
+.void {
+  background-color: var(--void);
+  --line: rgb(var(--washi-rgb) / 0.14);
+  --line-strong: rgb(var(--washi-rgb) / 0.24);
 }
 
 /* — Reusable entrance motion (the "Air" behavior — fade + rise) — */
@@ -262,6 +304,68 @@
     circle at center,
     var(--aura-fire-strong) 0%,
     transparent 68%
+  );
+}
+
+/* — Element halo geometry —
+   Deliberately adjacent to .aura above, so the difference is visible in one
+   screen: .aura hugs a section corner and washes a background; .halo is
+   centred on its own box and never leaves it.
+
+   Apply as `class="halo halo-fire"` on the wrapper around a mark or figure.
+   The `transparent 72%` falloff is not cosmetic — low-alpha radials band
+   visibly on true black, and a shorter falloff makes the banding worse.
+   For the same reason, don't take --halo-size below about 8rem. */
+.halo {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.halo::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  inline-size: min(var(--halo-size), 100%);
+  aspect-ratio: 1;
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.halo-fire::before {
+  background: radial-gradient(
+    circle at center,
+    var(--halo-fire) 0%,
+    transparent 72%
+  );
+}
+
+.halo-water::before {
+  background: radial-gradient(
+    circle at center,
+    var(--halo-water) 0%,
+    transparent 72%
+  );
+}
+
+.halo-earth::before {
+  background: radial-gradient(
+    circle at center,
+    var(--halo-earth) 0%,
+    transparent 72%
+  );
+}
+
+.halo-air::before {
+  background: radial-gradient(
+    circle at center,
+    var(--halo-air) 0%,
+    transparent 72%
   );
 }
 

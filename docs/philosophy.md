@@ -56,11 +56,41 @@ When adding anything new to this system — a component, an animation, a
 layout — ask which element it belongs to, and let that element's trait
 (not just its color) shape the decision.
 
+## The Avatar principle — mastery is the set, not the mix
+
+The four elements are not four options to pick from. Holding all four is
+the point: the same person who strikes decisively can also yield, also
+root, also let go. That is what mastery of a practice looks like, and
+it's the claim this system is built to make — in work, and in everything
+else the four traits describe.
+
+**But commanding all four does not mean using all four at once.** A
+master bends one element at a time, and is recognised as a master by
+moving cleanly between them. Four elements deployed simultaneously is not
+mastery; it's noise.
+
+So the system holds both:
+
+- **One accent leads any given moment.** This is unchanged, and it is
+  still the default everywhere.
+- **The full four appear only as a deliberate composition of peers** —
+  four cells, one element each, equal in size, weight and glow. That
+  composition is a *claim about range*, not a decoration. It is called a
+  **Fourfold**, and `foundations.md` sets the five conditions it has to
+  meet.
+
+The failure mode this rules out is the tempting one: sprinkling all four
+accents across a page because the palette has four colors. That reads as
+indecision, not range. The set works precisely because it is rare, bounded,
+and everything around it stays disciplined.
+
 ## Restraint rules
 
 - Two neutrals (ink, paper) do the heavy lifting. Color is earned, not
   default.
-- One accent leads per screen. Fire and Air can both glow, but they
+- One accent leads per screen — except inside a Fourfold set, the one
+  sanctioned exception (see the Avatar principle above, and the Fourfold
+  Rule in `foundations.md`). Fire and Air can both glow, but they
   shouldn't compete for the same moment.
 - Sharp corners, not soft ones — precision over softness, closer to a
   shoji screen's rectilinear grid than a rounded glass panel.
@@ -68,8 +98,15 @@ layout — ask which element it belongs to, and let that element's trait
 
 ## What this is not
 
-This is not a rebuild of Elemental Aura (the prior system). It shares
-DNA — dark, glow, premium hover states — but Genso is its own identity:
-Japanese-minimalist rather than generic-dark-SaaS, four-element rather
-than single-accent, brush-marked rather than purely geometric. See
+This is not a rebuild of Elemental Aura (the prior system, now archived).
+It shares DNA — dark, glow, premium hover states — but Genso is its own
+identity: Japanese-minimalist rather than generic-dark-SaaS, four-element
+rather than single-accent, brush-marked rather than purely geometric. See
 `docs/decisions.md` for the specific things that changed and why.
+
+It is also not an Avatar: The Last Airbender tribute. The four-element
+framing here predates that reference and comes from the classical
+elements and martial practice; the series is simply another descendant of
+the same source. Nothing in this system copies its artwork — the element
+marks in `components/marks.tsx` are original and deliberately structured
+to be unlike it. See `docs/decisions.md`.

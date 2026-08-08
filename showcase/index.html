@@ -77,6 +77,7 @@
 }
 
   :root {
+    --void: #000000;        /* pure black — a STAGE for marks, not a background */
     --sumi: #131110;        /* ink — primary background */
     --sumi-2: #1B1815;      /* panel base, before glass tint */
     --washi: #F3EEE4;       /* paper — primary text/foreground */
@@ -108,6 +109,14 @@
     --air-glow-bold: rgba(203, 161, 53, 0.7);
     --line: rgba(243, 238, 228, 0.09);
     --line-strong: rgba(243, 238, 228, 0.18);
+
+    /* Element halos — object-bound, unlike the background aura. Bright
+       because they are emphasis on a thing, not decoration on a page. */
+    --halo-fire: rgba(170, 0, 0, 0.3);
+    --halo-water: rgba(30, 111, 184, 0.3);
+    --halo-earth: rgba(46, 139, 87, 0.3);
+    --halo-air: rgba(203, 161, 53, 0.24);  /* capped, per the air-glow precedent */
+    --halo-size: 12rem;
 
     --semantic-error: #AA0000;    /* red — wrong, error, old way */
     --semantic-warning: #EAB308;  /* yellow — caution, needs attention */
@@ -157,6 +166,19 @@
   .d2 { animation-delay: .18s; }
   .d3 { animation-delay: .30s; }
   .d4 { animation-delay: .42s; }
+
+  /* This file inlines its own CSS rather than importing tokens.css, so it
+     needs its own copy of the reduced-motion guard — it does not inherit
+     the one in tokens.css. Every entrance here is decorative. */
+  @media (prefers-reduced-motion: reduce) {
+    .rise { opacity: 1; animation: none; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 
   /* ---------- hero ---------- */
   .hero {
@@ -261,6 +283,81 @@
     line-height: 1.7;
     max-width: 440px;
   }
+
+  /* ---------- void stage, marks, fourfold ---------- */
+  /* The .void scope bleeds full-width out of the centred wrap, so the stage
+     reads as a stage rather than a black card. --line re-binds here, per
+     tokens.css. */
+  .void-stage {
+    background: var(--void);
+    --line: rgba(243, 238, 228, 0.14);
+    --line-strong: rgba(243, 238, 228, 0.24);
+    box-shadow: 0 0 0 100vmax var(--void);
+    clip-path: inset(0 -100vmax);
+  }
+
+  .sub-head {
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 56px 0 8px;
+  }
+  .sub-head:first-of-type { margin-top: 0; }
+  .sub-desc {
+    color: var(--washi-dim);
+    font-size: 14px;
+    line-height: 1.7;
+    max-width: 560px;
+    margin: 0 0 28px;
+  }
+
+  .halo { position: relative; isolation: isolate;
+    display: inline-flex; align-items: center; justify-content: center; }
+  .halo::before {
+    content: ""; position: absolute; z-index: -1;
+    top: 50%; left: 50%; translate: -50% -50%;
+    inline-size: min(var(--halo-size), 100%); aspect-ratio: 1;
+    pointer-events: none; border-radius: 50%;
+  }
+  .halo-fire::before  { background: radial-gradient(circle at center, var(--halo-fire)  0%, transparent 72%); }
+  .halo-water::before { background: radial-gradient(circle at center, var(--halo-water) 0%, transparent 72%); }
+  .halo-earth::before { background: radial-gradient(circle at center, var(--halo-earth) 0%, transparent 72%); }
+  .halo-air::before   { background: radial-gradient(circle at center, var(--halo-air)   0%, transparent 72%); }
+
+  .mark-slot { inline-size: 112px; block-size: 112px; }
+  .sil-slot  { inline-size: 144px; block-size: 144px; }
+  .mark-kanji { font-family: var(--font-kanji); font-size: 44px; line-height: 1; }
+
+  .mark-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 24px;
+  }
+  .mark-cell { text-align: center; }
+  .mark-name {
+    font-family: var(--font-mono);
+    font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase;
+    margin: 4px 0 2px;
+  }
+  .mark-desc { color: var(--washi-dim); font-size: 13px; margin: 0; }
+
+  .fourfold {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+  /* Peers: identical padding, border, and halo strength in every cell. */
+  .ff-cell {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    text-align: center;
+  }
+  .ff-title {
+    font-family: var(--font-head);
+    font-size: 18px; margin: 8px 0 6px; color: var(--washi);
+  }
+  .ff-desc { color: var(--washi-dim); font-size: 13px; line-height: 1.6; margin: 0; }
 
   /* ---------- palette ---------- */
   .swatches {
@@ -594,7 +691,7 @@
 
   <header class="hero">
     <div class="seal-mark rise d1">元</div>
-    <p class="eyebrow rise d1">Concept v0.3 <span>—</span> not yet shipped</p>
+    <p class="eyebrow rise d1">v0.5 <span>—</span> in production</p>
     <h1 class="wordmark rise d2">Genso<small>元素 — element</small></h1>
     <p class="tagline rise d3">The space between is the design.</p>
     <p class="lede rise d4">A modular system built on restraint, not dullness — ink black, paper white, and four elements. Fire leads in red; water, earth, and air each carry their own character and their own glow.</p>
@@ -807,6 +904,130 @@
         <span class="mech-kanji" style="color:var(--air-text);">風</span>
         <p class="mech-name">Air · Formless</p>
         <p class="mech-desc">The motion language — fade and rise, ease-out, never bounce. Everything arrives like breath.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="void void-stage">
+    <div class="section-head">
+      <div>
+        <p class="section-num">05</p>
+        <h2 class="section-title">The void stage</h2>
+      </div>
+      <p class="section-desc">Pure black is a stage, not a background — opt in with <code>.void</code> where a mark or figure has to carry. Ink stays the reading surface. Note the hairlines below are stronger here than elsewhere: <code>--line</code> re-binds inside the scope, because a border at ink strength starts dissolving on black.</p>
+    </div>
+
+    <h3 class="sub-head">Element marks — geometric register</h3>
+    <p class="sub-desc">Original marks, not the Avatar ones. One 24-grid, 1.5 stroke, butt caps, no circle enclosure. Each is open in the way its element is open — fire's apex is cut and still travelling, air is only corners.</p>
+    <div class="mark-grid">
+      <div class="mark-cell">
+        <span class="halo halo-fire mark-slot" style="color:var(--fire-text);">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true">
+            <path d="M12 20 H4 L9.5 8"/><path d="M14.5 8 L20 20 H12"/><path d="M12 20 V3"/>
+          </svg>
+        </span>
+        <p class="mark-name" style="color:var(--fire-text);">Fire</p>
+        <p class="mark-desc">Cut apex, stroke through the gap</p>
+      </div>
+      <div class="mark-cell">
+        <span class="halo halo-water mark-slot" style="color:var(--water-text);">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true">
+            <path d="M2 18 H18"/><path d="M4 12 H16"/><path d="M6 6 H14"/>
+          </svg>
+        </span>
+        <p class="mark-name" style="color:var(--water-text);">Water</p>
+        <p class="mark-desc">Displacement, not a sine wave</p>
+      </div>
+      <div class="mark-cell">
+        <span class="halo halo-earth mark-slot" style="color:var(--earth-text);">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true">
+            <path d="M6 6 H18 V18 H6 Z"/><path d="M2 18 H22"/>
+          </svg>
+        </span>
+        <p class="mark-name" style="color:var(--earth-text);">Earth</p>
+        <p class="mark-desc">Ground wider than the form</p>
+      </div>
+      <div class="mark-cell">
+        <span class="halo halo-air mark-slot" style="color:var(--air-text);">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true">
+            <path d="M4 9 V4 H9"/><path d="M15 4 H20 V9"/><path d="M20 15 V20 H15"/><path d="M9 20 H4 V15"/>
+          </svg>
+        </span>
+        <p class="mark-name" style="color:var(--air-text);">Air</p>
+        <p class="mark-desc">Corners only — boundary inferred</p>
+      </div>
+    </div>
+
+    <h3 class="sub-head">Kanji register</h3>
+    <p class="sub-desc">The same four elements in brush. Both registers ship — geometric for UI, kanji for brand moments.</p>
+    <div class="mark-grid">
+      <div class="mark-cell">
+        <span class="halo halo-fire mark-slot mark-kanji" style="color:var(--fire-text);">火</span>
+      </div>
+      <div class="mark-cell">
+        <span class="halo halo-water mark-slot mark-kanji" style="color:var(--water-text);">水</span>
+      </div>
+      <div class="mark-cell">
+        <span class="halo halo-earth mark-slot mark-kanji" style="color:var(--earth-text);">土</span>
+      </div>
+      <div class="mark-cell">
+        <span class="halo halo-air mark-slot mark-kanji" style="color:var(--air-text);">風</span>
+      </div>
+    </div>
+
+    <h3 class="sub-head">Fourfold — the one place all four coexist</h3>
+    <p class="sub-desc">Mastery is the set, not the mix. Four peers, one element each, equal weight — a claim about range. Emphasise one and it stops being a set and becomes four accents competing, which is still banned.</p>
+    <div class="fourfold">
+      <div class="ff-cell">
+        <span class="halo halo-fire mark-slot" style="color:var(--fire-text);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true">
+            <path d="M12 20 H4 L9.5 8"/><path d="M14.5 8 L20 20 H12"/><path d="M12 20 V3"/>
+          </svg>
+        </span>
+        <p class="ff-title">Fire · Bold</p>
+        <p class="ff-desc">The committed strike. Decisive, not reckless.</p>
+      </div>
+      <div class="ff-cell">
+        <span class="halo halo-water mark-slot" style="color:var(--water-text);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true">
+            <path d="M2 18 H18"/><path d="M4 12 H16"/><path d="M6 6 H14"/>
+          </svg>
+        </span>
+        <p class="ff-title">Water · Fluid</p>
+        <p class="ff-desc">Yields to overcome. Wears stone by persistence.</p>
+      </div>
+      <div class="ff-cell">
+        <span class="halo halo-earth mark-slot" style="color:var(--earth-text);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true">
+            <path d="M6 6 H18 V18 H6 Z"/><path d="M2 18 H22"/>
+          </svg>
+        </span>
+        <p class="ff-title">Earth · Grounded</p>
+        <p class="ff-desc">The stance you strike from. Patient, rooted.</p>
+      </div>
+      <div class="ff-cell">
+        <span class="halo halo-air mark-slot" style="color:var(--air-text);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true">
+            <path d="M4 9 V4 H9"/><path d="M15 4 H20 V9"/><path d="M20 15 V20 H15"/><path d="M9 20 H4 V15"/>
+          </svg>
+        </span>
+        <p class="ff-title">Air · Formless</p>
+        <p class="ff-desc">Breath and spirit. Mushin — no-mind.</p>
+      </div>
+    </div>
+
+    <h3 class="sub-head">Silhouette</h3>
+    <p class="sub-desc">A figure filled with pure void, read entirely by the halo behind it. Colour is never the only carrier of meaning — a silhouette always keeps a text label.</p>
+    <div class="mark-grid">
+      <div class="mark-cell">
+        <span class="halo halo-water sil-slot">
+          <svg width="72" height="72" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="6" r="3.2" fill="var(--void)"/>
+            <path d="M12 10.2 c-3.6 0-6 2.4-6 5.6 V22 h12 v-6.2 c0-3.2-2.4-5.6-6-5.6 Z" fill="var(--void)"/>
+          </svg>
+        </span>
+        <p class="mark-name" style="color:var(--water-text);">Figure</p>
+        <p class="mark-desc">Void fill, halo carries the shape</p>
       </div>
     </div>
   </section>

@@ -9,8 +9,8 @@ every project, so no project starts from a blank canvas.
 |---|---|---|
 | `docs/` | The *why* — philosophy, operating rules, decision log | Before changing a token, or when you forget why something is the way it is |
 | `tokens/` | The *what* — colors, type, spacing, motion as CSS variables + the Tailwind preset + font loading | Every new project starts here |
-| `components/` | The *how* — reusable UI primitives (Button, Card, Input, Badge, Status, Compare) | Building any interface |
-| `layout/` | Page-level shells (Sidebar, Dashboard shell, Centered form) | Starting a new page type |
+| `components/` | The *how* — UI primitives (Button, Card, Input, Badge, Status, Compare) plus the element marks and Silhouette | Building any interface |
+| `layout/` | Page-level shells (Sidebar, Dashboard shell, Centered form) and the Fourfold set | Starting a new page type |
 | `motion/` | Animation principles, CSS keyframes, and the JS constants for framer-motion | Adding any transition or entrance animation |
 | `assets/` | Self-hosted fonts (subsetted, no CDN dependency) and logo files | Rarely — `tokens/fonts.css` wires these up for you |
 | `showcase/` | The living style guide — a real page that demonstrates the whole system | Reference, and the seed of the public showcase site |
@@ -57,7 +57,8 @@ files into each project.
 
 ```ts
 import { Button, Card, Status } from "elemental-design/primitives";
-import { DashboardShell, Sidebar } from "elemental-design/shells";
+import { ElementMark, Silhouette } from "elemental-design/marks";
+import { Fourfold, DashboardShell, Sidebar } from "elemental-design/shells";
 import { easeAir, duration, riseInOnScroll } from "elemental-design/motion";
 ```
 
@@ -93,8 +94,15 @@ that can't take one. Run it after touching tokens, the preset, or motion.
 
 ## Status
 
-**v0.4 — in production.** Shipped in `gtm-portfolio` (rodneyhu.com). The
-v0.3→v0.4 pass fixed the bugs that surfaced building it and closed the gaps
-that forced that project to invent its own type scale. See `CHANGELOG.md` for
-what changed and `docs/decisions.md` for why, so nothing gets re-litigated by
-accident.
+**v0.5 — in production.** Shipped in `gtm-portfolio` (rodneyhu.com).
+
+v0.4 fixed the bugs that surfaced building that site and closed the gaps
+that forced it to invent its own type scale. v0.5 added the void stage,
+object-bound halos, the element marks, and the Fourfold — the pieces needed
+to express mastery of all four elements without loosening the restraint that
+makes the system work.
+
+Elemental Aura, the prior system, is archived. This is the only one.
+
+See `CHANGELOG.md` for what changed and `docs/decisions.md` for why, so
+nothing gets re-litigated by accident.

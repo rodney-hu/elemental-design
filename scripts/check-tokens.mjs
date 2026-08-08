@@ -4,8 +4,8 @@
  *
  * Zero dependencies. Run with `npm run check`.
  *
- * Guards the four failure modes that actually bit this system, so they can't
- * come back silently:
+ * Guards the failure modes that actually bit this system, so they can't come
+ * back silently:
  *
  *   1. A Tailwind colour points at an `--x-rgb` triplet that tokens.css
  *      doesn't define  →  the class resolves to nothing, silently.
@@ -14,6 +14,12 @@
  *      using a token  →  the exact rule foundations.md sets, unenforced.
  *   4. A component uses an opacity modifier (`bg-air/10`) on a colour that
  *      isn't alpha-composable  →  the original portfolio bug.
+ *   5. showcase/index.html's inlined palette drifts from tokens.css.
+ *   6. A `-text` tint fails WCAG AA, or a base colour gets used as a glyph.
+ *   7. An aura or halo exceeds its documented alpha cap.
+ *   8. An element mark breaks the drawing rules (round caps, wrong grid).
+ *   9. A kanji character outside the font subset  →  silent fallback.
+ *  10. `.halo` on a section/main  →  the banned full-page wash, renamed.
  */
 
 import { readFileSync, readdirSync } from "node:fs";
@@ -188,6 +194,159 @@ function stripComments(src) {
         `--${name} is ${hex} but tokens.css defines ${canonical.toUpperCase()}`,
       );
     }
+  }
+}
+
+/* ---- 6. Contrast: every -text tint must clear AA on ink AND void --------- */
+/* The void stage makes this safety-critical. The `-text` tints all improve on
+   pure black, but the BASE colours get worse: --fire is 2.7:1 and --water
+   4.0:1 on #000, so "base colours are fills only" stops being a style rule
+   and becomes an accessibility one. */
+{
+  const srgb = (c) => {
+    const n = c / 255;
+    return n <= 0.03928 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4);
+  };
+  const lum = ([r, g, b]) =>
+    0.2126 * srgb(r) + 0.7152 * srgb(g) + 0.0722 * srgb(b);
+  const ratio = (a, b) => {
+    const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  const triplet = (name) => {
+    const m = tokensCss.match(
+      new RegExp(`--${name}-rgb:\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)`),
+    );
+    return m ? [+m[1], +m[2], +m[3]] : null;
+  };
+
+  const backdrops = [
+    ["--sumi", triplet("sumi")],
+    ["--void", triplet("void")],
+  ];
+
+  for (const m of tokensCss.matchAll(/--([\w-]+)-text-rgb:\s*(\d+)\s+(\d+)\s+(\d+)/g)) {
+    const fg = [+m[2], +m[3], +m[4]];
+    for (const [bgName, bg] of backdrops) {
+      if (!bg) continue;
+      const r = ratio(fg, bg);
+      if (r < 4.5) {
+        fail(
+          "contrast",
+          `--${m[1]}-text is ${r.toFixed(2)}:1 on ${bgName} — below the 4.5:1 floor for text`,
+        );
+      }
+    }
+  }
+}
+
+/* ---- 7. Alpha caps for aura and halo ------------------------------------ */
+/* The caps lived only in prose. An aura tints a background (≤0.055, 0.085 on
+   a hero); a halo is bound to an object (≤0.30, air ≤0.24). */
+{
+  const caps = { "aura-fire": 0.055, "aura-fire-strong": 0.085 };
+  for (const el of ["fire", "water", "earth"]) caps[`halo-${el}`] = 0.3;
+  caps["halo-air"] = 0.24;
+
+  for (const [name, cap] of Object.entries(caps)) {
+    /* Note the nested parens: the value is `rgb(var(--x-rgb) / 0.055)`, so a
+       naive [^)]* stops inside var(...). \s spans newlines too, because
+       prettier wraps the longer declarations. */
+    const m = tokensCss.match(
+      new RegExp(
+        `--${name}:\\s*rgb\\(\\s*var\\(--[\\w-]+\\)\\s*/\\s*([\\d.]+)`,
+      ),
+    );
+    if (!m) {
+      fail("alpha-cap", `tokens.css does not define --${name}`);
+    } else if (parseFloat(m[1]) > cap) {
+      fail(
+        "alpha-cap",
+        `--${name} is ${m[1]}, above its documented cap of ${cap}`,
+      );
+    }
+  }
+}
+
+/* ---- 8. Element mark drawing rules -------------------------------------- */
+{
+  const marks = read("components/marks.tsx");
+  if (/strokeLinecap=["'{]?\s*["']?round/.test(marks)) {
+    fail("marks", `round line caps contradict the sharp-corner rule`);
+  }
+  if (/strokeLinejoin=["'{]?\s*["']?round/.test(marks)) {
+    fail("marks", `round line joins contradict the sharp-corner rule`);
+  }
+  if (!marks.includes('viewBox="0 0 24 24"')) {
+    fail("marks", `marks must share the 24x24 grid`);
+  }
+  if (!marks.includes('stroke="currentColor"')) {
+    fail("marks", `marks must stroke currentColor so they inherit their element`);
+  }
+  if (/<circle/.test(marks)) {
+    fail(
+      "marks",
+      `no circle enclosure — that is the ATLA glyph structure this set deliberately avoids`,
+    );
+  }
+}
+
+/* ---- 9. Kanji must stay inside the font subset --------------------------- */
+/* The fonts are subset to exactly these glyphs. Anything else silently falls
+   back to a system font with no visible error — see assets/fonts/README.md. */
+{
+  /* Verified empirically against mashan400.woff2, not taken from the README:
+     render each glyph at 100px in the kanji font vs. a fallback and compare
+     widths — identical width means it fell back. (`document.fonts.check()`
+     is NOT usable here; it returns true for glyphs the font doesn't have.)
+     流 is present, from the 流れるように sample. 氷 is not — a useful probe. */
+  const SUBSET = new Set([..."元素墨紙朱金水土風火流"]);
+  const CJK = /[㐀-䶿一-鿿]/gu;
+  const scan = [
+    ...readdirSync(join(ROOT, "components")).map((f) => `components/${f}`),
+    ...readdirSync(join(ROOT, "layout")).map((f) => `layout/${f}`),
+    "showcase/index.html",
+  ].filter((p) => /\.(tsx?|jsx?|html)$/.test(p));
+
+  for (const file of scan) {
+    for (const m of read(file).matchAll(CJK)) {
+      if (!SUBSET.has(m[0])) {
+        fail(
+          file,
+          `kanji "${m[0]}" is outside the font subset — it will silently fall back. Re-subset first (assets/fonts/README.md)`,
+        );
+      }
+    }
+  }
+}
+
+/* ---- 10. A halo must never be applied to a page-level element ------------ */
+/* This is the one that stops halo creep from quietly recreating the banned
+   full-page background glow under a new name. */
+{
+  for (const dir of ["components", "layout"]) {
+    for (const f of readdirSync(join(ROOT, dir))) {
+      if (!/\.(tsx?|jsx?)$/.test(f)) continue;
+      const src = stripComments(read(`${dir}/${f}`));
+      for (const m of src.matchAll(
+        /<(section|main|body)\b[^>]*className={?["'`][^"'`]*\bhalo\b/g,
+      )) {
+        fail(
+          `${dir}/${f}`,
+          `halo applied to <${m[1]}> — halos bind to objects, not pages (foundations.md)`,
+        );
+      }
+    }
+  }
+  const showcase10 = read("showcase/index.html");
+  for (const m of showcase10.matchAll(
+    /<(section|main|body)\b[^>]*class=["'][^"']*\bhalo\b/g,
+  )) {
+    fail(
+      "showcase",
+      `halo applied to <${m[1]}> — halos bind to objects, not pages`,
+    );
   }
 }
 
