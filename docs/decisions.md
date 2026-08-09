@@ -6,6 +6,29 @@ nobody (including future-you) has to re-derive it from scratch.
 
 ---
 
+**The Tailwind preset declares its own content globs.**
+Found the first time a packaged component was actually rendered downstream:
+the kanji register came out in the body font. Cause — the consumer's
+`content` only covered its own `src/`, so every utility appearing *only*
+inside this package's components was never generated. `font-kanji`,
+`bg-earth-soft` and `shadow-glow-earth` were all silently missing, which
+meant `Badge tone="earth"` had no background and `Card accent="earth"` had no
+glow. `hover:border-water/40` survived purely by coincidence, because the
+consuming project happened to use the same class in its own source.
+
+This is the same failure mode as the original opacity-modifier bug — a class
+that reads correctly in the component and resolves to nothing in the browser —
+and the README was actively teaching it, by showing a `content` array with
+only the project's own files. Fixed at the source rather than in the docs: the
+preset now contributes absolute globs (via `__dirname`, so they resolve
+wherever the package is installed) for `components/` and `layout/`, and
+Tailwind merges those with the consumer's array. A project cannot forget it
+now. `npm run check` fails if the preset ever stops declaring them.
+
+The general lesson, worth keeping: **a design system distributed as source
+must tell the consumer's build where its source is.** Nothing else in the
+toolchain will notice that it didn't.
+
 **Pure black is a stage, not a background.**
 The reference material that prompted v0.5 is all on `#000000`, and the
 temptation was to move `--sumi` there. Rejected: ink/paper is the metaphor

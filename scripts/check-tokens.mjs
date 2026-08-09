@@ -197,6 +197,37 @@ function stripComments(src) {
   }
 }
 
+/* ---- 5b. The preset must scan this package's own components -------------- */
+/* Without this, any utility used only inside components/ or layout/ is never
+   generated in the consumer's stylesheet and silently resolves to nothing —
+   the same failure mode as the original opacity bug. Found in the wild:
+   font-kanji, bg-earth-soft and shadow-glow-earth were all missing from the
+   portfolio's CSS because its content globs only covered its own src/. */
+{
+  const dirs = ["components", "layout"];
+  if (!/content:\s*\[/.test(preset)) {
+    fail(
+      "tailwind-preset",
+      "declares no `content` — consumers will silently drop every class used only inside this package",
+    );
+  } else {
+    for (const d of dirs) {
+      if (!new RegExp(`["'\`]${d}["'\`]`).test(preset)) {
+        fail(
+          "tailwind-preset",
+          `content does not cover ${d}/ — classes used only there will not be generated downstream`,
+        );
+      }
+    }
+    if (!preset.includes("__dirname")) {
+      fail(
+        "tailwind-preset",
+        "content paths must be absolute (derived from __dirname), or they resolve against the consumer's cwd",
+      );
+    }
+  }
+}
+
 /* ---- 6. Contrast: every -text tint must clear AA on ink AND void --------- */
 /* The void stage makes this safety-critical. The `-text` tints all improve on
    pure black, but the BASE colours get worse: --fire is 2.7:1 and --water

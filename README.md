@@ -39,6 +39,12 @@ module.exports = {
 };
 ```
 
+List only your own source in `content`. The preset already contributes this
+package's component files, and Tailwind merges the two arrays — that part is
+not something you need to remember. It matters: without it, any class used
+only inside these components (`font-kanji`, `bg-earth-soft`,
+`shadow-glow-earth`, …) is never generated and silently renders as nothing.
+
 **2. CSS — import fonts and tokens above your Tailwind directives:**
 
 ```css

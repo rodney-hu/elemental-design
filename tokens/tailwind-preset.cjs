@@ -15,7 +15,18 @@
  * Add project-only tokens in the project's own `theme.extend`; add anything
  * reusable HERE, so every project gets it.
  *
- * `content` is deliberately NOT set: it belongs to the consuming project.
+ * `content` below covers THIS PACKAGE'S OWN component files, and nothing else.
+ * Consumers still list their own source; Tailwind merges the two arrays.
+ *
+ * This is not optional politeness — without it, every utility class that
+ * appears only inside these components (font-kanji, bg-earth-soft,
+ * shadow-glow-earth, …) is never generated in the consumer's stylesheet and
+ * silently resolves to nothing. That is the same failure mode as the original
+ * opacity-modifier bug: the component looks right in source and renders wrong.
+ * Declaring it here means a project cannot forget it.
+ *
+ * The path is absolute, derived from __dirname, so it resolves wherever the
+ * package is installed (node_modules, a workspace, a file: link).
  *
  * Colours read the RGB channel triplets from tokens.css, not the derived hex
  * vars, so opacity modifiers (bg-air/10, border-water/40) resolve correctly.
@@ -25,9 +36,18 @@
  * border-line, text-washi-dim, rounded (default = sharp), etc.
  */
 
+const path = require("node:path");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class", // dark is the only mode — see docs/foundations.md
+
+  // This package's own components only. Merged with the consumer's content.
+  content: [
+    path.join(__dirname, "..", "components", "**", "*.{js,cjs,mjs,jsx,ts,tsx}"),
+    path.join(__dirname, "..", "layout", "**", "*.{js,cjs,mjs,jsx,ts,tsx}"),
+  ],
+
   theme: {
     extend: {
       colors: {

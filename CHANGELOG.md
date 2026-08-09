@@ -2,7 +2,23 @@
 
 Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
-## v0.5 — current
+## v0.5.1 — current
+
+**Fixed — packaged components were silently losing their styles.**
+The Tailwind preset now declares `content` globs for its own `components/`
+and `layout/` directories (absolute, via `__dirname`), which Tailwind merges
+with the consuming project's array.
+
+Without it, any utility used *only* inside this package was never generated
+downstream: `font-kanji` (so the kanji register rendered in the body font),
+`bg-earth-soft` (so `Badge tone="earth"` had no background) and
+`shadow-glow-earth` (so `Card accent="earth"` had no glow). The README had
+been teaching the broken configuration. Guarded by a new check.
+
+Caught the first time a packaged component was rendered in a real consumer —
+the argument for actually using this stuff, not just typechecking it.
+
+## v0.5
 
 "Void, Halo, Fourfold." Adds the pieces the system was missing to express
 mastery of all four elements, without loosening the restraint that makes it
