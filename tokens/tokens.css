@@ -604,7 +604,23 @@
   will-change: opacity, transform;
 }
 
-.reveal-in {
+/* Only JS can add `.reveal-in`, so without JS this content would sit at
+   opacity 0 forever — a blank page with no error. Anything whose visibility
+   depends on a script needs a path back for readers who don't run one. */
+@media (scripting: none) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* `.reveal.reveal-in`, not `.reveal-in`. Both classes are on the same
+   element, so at equal specificity the winner is decided by source order —
+   which puts the visibility of half the page at the mercy of how a bundler
+   happens to order two rules. Doubling the class makes the lit state win on
+   specificity instead, and the failure mode being ruled out is the worst
+   kind: content stuck at opacity 0 with no error anywhere. */
+.reveal.reveal-in {
   opacity: 1;
   transform: none;
 }
@@ -623,7 +639,8 @@
      the observer hasn't reached yet — the content would be invisible, not
      merely unanimated. This is the same class of mistake as the showcase
      that animated regardless of the setting (docs/decisions.md), inverted. */
-  .reveal {
+  .reveal,
+  .reveal.reveal-in {
     opacity: 1;
     transform: none;
     transition: none;

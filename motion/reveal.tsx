@@ -63,6 +63,19 @@ export function Reveal({
       return;
     }
 
+    /* An element with no area can never satisfy a threshold, so the observer
+       would never fire and the content would stay at opacity 0 permanently.
+       That happens more often than it sounds: a collapsed container, a
+       display:none ancestor, a hidden tab panel, a backgrounded or headless
+       browser reporting a 0×0 viewport. In every one of those cases the
+       honest reading is "we cannot measure this", and the safe answer to
+       that is to show the content, never to hide it. */
+    const box = el.getBoundingClientRect();
+    if (box.width === 0 || box.height === 0) {
+      setShown(true);
+      return;
+    }
+
     /* If the element is already in view on mount — a page loaded partway
        down, or a short page where everything fits — the observer fires
        immediately, which is the behaviour we want. */
