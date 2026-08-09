@@ -2,7 +2,86 @@
 
 Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
-## v0.6 — current
+## v0.7 — current
+
+**Closes the gap between having good rules and never starting from scratch.**
+Reading the whole decision log back surfaced the thing none of its entries said
+out loud: every failure it records happened in a *consuming project*, not here.
+Eleven type sizes below 24px, three `<h2>` sizes on one site, five tracking
+values, mono headings, a second easing curve, three invented durations. Tokens
+prevented none of them, and the checker only ever looked at this repo — so it
+was guarding the code that had never broken a rule.
+
+**`genso-check` — the linter runs in your project now**
+- `npx genso-check ./src` enforces the system's rules on any source tree.
+- The old `check-tokens.mjs` split into `scripts/lib/rules-internal.mjs`
+  (token graph, motion mirror, contrast, alpha caps, mark drawing rules) and
+  `scripts/lib/rules-usage.mjs` (everything true of any codebase).
+- New rules, each one a decision-log entry made executable: arbitrary type /
+  spacing / width / radius values, sizes below the 13px floor, unsanctioned
+  durations, a second easing curve, uppercase on a real heading, raw
+  black/white, `rgb()` colour literals, dead v0.6 patterns, CDN fonts,
+  `font-smoothing: antialiased`, halos on page-level elements.
+- Suppress a genuine exception with `genso-allow: <rule> — <reason>`.
+- `npm run rules` lists every rule and what it guards.
+
+**The layer that kept being reinvented now ships**
+- `components/typography.tsx` — `Heading` (one size per level, permanently),
+  `Eyebrow` (13px floor, `tracking-label`, and structurally incapable of
+  rendering as a heading), `Prose` (capped at `--measure`, on a panel),
+  `Text`, `Link`.
+- `layout/structure.tsx` — `Container`, `Section` (rhythm + the corner-aura
+  geometry), `Stack`, `Grid`.
+- `components/forms.tsx` — `FormField` wires label → control → error → hint
+  with a generated id, `aria-describedby` and `aria-invalid`. None of that
+  existed: a screen-reader user got an unlabelled box and never heard the
+  error. Plus `Textarea`, `Select`, `Checkbox`, `Radio`, `RadioGroup`.
+
+**New tokens**
+- `--measure` (68ch) — the line-length rule the system discussed for five
+  versions and never set.
+- `--container-sm/md/lg/xl` — four sanctioned page widths.
+- `--space-3xl/4xl/5xl` (72/96/144px) — the scale stopped at 48px, so section
+  rhythm was invented per project.
+- `--shadow-root-earth` — earth's *behavior* half, described since v0.1 with
+  no token behind it. Weight, not emission; never paired with a glow.
+
+**Showcase is a real app**
+- Rebuilt as Vite + React importing the actual components through the package's
+  own `exports` map. The third copy of the palette is gone, its drift check was
+  deleted rather than maintained, and `npm run dev` is a live sandbox.
+- It found a bug on first render — see `Card` below.
+
+**`genso init` and CI**
+- `npx genso init` writes `tailwind.config.js` with `...genso.content` already
+  spread (the footgun with two separate decision-log entries), the CSS import
+  block, and the `body` void rule. Detects Next.js and ESM projects.
+- GitHub Actions runs check + typecheck + showcase build on every push.
+
+**Breaking**
+- `Card` defaults to `interactive={false}` (was `true`). It had been giving
+  every card `cursor-pointer` and a hover lift with no focus ring, no role and
+  no keyboard path. **Migration:** pass `interactive` explicitly, or switch to
+  `CardLink` / `CardButton` — which render a real `<a>` / `<button>`, so
+  clickability comes from the element rather than from a styling prop.
+- `Card`'s shadow is the `elevation` prop (`raised` | `rooted` | `none`), not
+  a hardcoded `shadow-lg`. **Migration:** `className="shadow-…"` on a Card
+  never reliably worked — it produced two `box-shadow` utilities at equal
+  specificity and silently lost. Use `elevation`.
+- `border-line-void` / `border-line-void-strong` **removed** — dead duplicates
+  of `border-line` / `border-line-strong` from the era when `--line` re-bound
+  inside `.void`. Use the plain pair.
+- `peerDependencies.tailwindcss` narrowed from `>=3.4` to `^3.4`. The old range
+  was a false promise: Tailwind 4 dropped the JS preset format this system is
+  built on, so a fresh install could satisfy the range and then fail.
+- `scripts/check-tokens.mjs` **removed** — replaced by `bin/genso-check.mjs`.
+  `npm run check` is unchanged.
+
+**Also**
+- Next.js consumers need `transpilePackages: ["elemental-design"]`. This was
+  always true and never documented; `genso init` now says so.
+
+## v0.6
 
 **The page is void; content lives on ink panels.** Reverses v0.5's "pure black
 is a stage, not a background" after seeing it shipped. Panels separate from

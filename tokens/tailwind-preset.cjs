@@ -127,14 +127,15 @@ module.exports = {
       // The --line tokens were defined in tokens.css from the start but never
       // wired up, which is why components fell back to hardcoded
       // border-white/10 literals. Wired here so `border-line` works.
+      //
+      // There is exactly one hairline strength pair. `line-void` /
+      // `line-void-strong` used to sit here from the era when `--line`
+      // re-bound inside a `.void` scope; v0.6 made void the page, so both
+      // were dead duplicates that re-authored 0.14 / 0.24 outside the token
+      // system — the second-representation anti-pattern foundations.md bans.
       borderColor: {
         line: "var(--line)",
         "line-strong": "var(--line-strong)",
-        // --line re-binds inside `.void` (see tokens.css), so plain
-        // `border-line` is already correct there. These two are only for
-        // reaching for a void-strength hairline OUTSIDE a .void scope.
-        "line-void": "rgb(var(--washi-rgb) / 0.14)",
-        "line-void-strong": "rgb(var(--washi-rgb) / 0.24)",
       },
 
       borderRadius: {
@@ -150,6 +151,21 @@ module.exports = {
         lg: "var(--space-lg)",
         xl: "var(--space-xl)",
         "2xl": "var(--space-2xl)",
+        // Page-scale rhythm. Reach for these on sections, not components.
+        "3xl": "var(--space-3xl)",
+        "4xl": "var(--space-4xl)",
+        "5xl": "var(--space-5xl)",
+      },
+
+      // `max-w-measure` is the reading-width rule; the containers are the
+      // four sanctioned page widths. A hand-typed `max-w-[62rem]` is the
+      // thing these exist to replace — genso-check flags it.
+      maxWidth: {
+        measure: "var(--measure)",
+        "container-sm": "var(--container-sm)",
+        "container-md": "var(--container-md)",
+        "container-lg": "var(--container-lg)",
+        "container-xl": "var(--container-xl)",
       },
 
       transitionTimingFunction: {
@@ -171,6 +187,10 @@ module.exports = {
         "glow-earth-soft": "0 0 20px var(--earth-glow)",
         "glow-air": "0 0 40px var(--air-glow-bold)",
         "glow-air-soft": "0 0 20px var(--air-glow)",
+
+        // Earth's behavior — weight, not emission. See the token comment in
+        // tokens.css: never pair this with a glow on the same object.
+        "root-earth": "var(--shadow-root-earth)",
       },
 
       backdropBlur: {

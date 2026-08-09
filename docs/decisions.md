@@ -6,6 +6,100 @@ nobody (including future-you) has to re-derive it from scratch.
 
 ---
 
+**The linter's job is the consuming project, not this repo.**
+Reading back the whole decision log to plan v0.7 surfaced something none of the
+individual entries said out loud: **every rule in it was learned from a failure
+that happened downstream.** Eleven type sizes below 24px, three `<h2>` sizes on
+one site, five competing tracking values, section headings rendered as 12px mono
+labels, a second easing curve, three invented durations, `border-white/[0.18]`
+in five places. Not one of those was ever in `components/` or `layout/` — which
+is the only thing `check-tokens.mjs` looked at.
+
+So the checker was guarding the code that had never broken a rule. It split into
+`scripts/lib/rules-internal.mjs` (things only meaningful against this package —
+preset↔token resolution, the motion mirror, alpha caps, contrast, the mark
+drawing rules) and `scripts/lib/rules-usage.mjs` (things true of *any* source
+tree), with `bin/genso-check.mjs` exposing the usage half as a command a project
+runs on its own `src/`. It resolves this package's `tokens.css` and preset
+through `import.meta.url`, so a consumer gets correct answers about what's
+alpha-composable rather than a hardcoded list.
+
+The new rules are not invented; each one is a line in this file made executable
+— arbitrary values on a tokened axis, unsanctioned durations, a second easing
+curve, uppercase on a real heading, the soft-radius register Genso broke from.
+The test of the rules was running them against `gtm-portfolio`: **rules that
+don't fire on the codebase they were derived from are wrong.**
+
+There is a `genso-allow: <rule> — <reason>` suppression comment on purpose. A
+linter with no escape hatch gets switched off entirely the first time it's
+wrong, and then guards nothing.
+
+**Tokens make a value available; components make it the only one.**
+The type scale landed in v0.4 precisely because every project was inventing
+sizes inline — and yet the *same* class of drift kept happening, because a token
+is only a suggestion at the call site. `text-lg` and `text-[19px]` are equally
+easy to type.
+
+v0.7 adds the layer that was missing between tokens and pages: `Heading` (one
+size per level, permanently), `Eyebrow` (which renders `<p>`/`<span>` and
+structurally *cannot* be a heading, encoding all three conditions from the
+uppercase-micro-label entry below), `Prose` (measure + panel), and
+`Section` / `Container` / `Stack` / `Grid`. Same technique the `Fourfold`
+already used: put the rule in the type system, not in prose that has to be
+remembered.
+
+This also forced the tokens that were quietly missing — `--measure` (no
+line-length rule had ever been set, despite prose readability being a recurring
+complaint), four container widths, and `--space-3xl/4xl/5xl`, since the scale
+stopped at 48px and section rhythm was therefore invented per project.
+
+**`Card` no longer claims to be clickable by default.**
+`interactive` defaulted to `true`, so every card got `cursor-pointer` and a
+hover lift while having no focus ring, no role, and no keyboard path — an
+affordance that lies to a mouse user and doesn't exist for a keyboard one. The
+default is now `false`, and clickability comes from `CardLink`, which renders an
+`<a>`. **Breaking:** cards that were relying on the default need `interactive`
+passed explicitly, or should become `CardLink`.
+
+The general form of the mistake is worth keeping: *a styling prop should not
+confer semantics.* `interactive` describes how something looks on hover; whether
+it can be activated is the element's job.
+
+**The showcase renders the real components, and immediately earned its keep.**
+It used to be a 1040-line standalone HTML file that reimplemented every
+component by hand and carried its own copy of the palette — a third place
+every colour lived, which silently fell two versions behind and needed a
+dedicated drift check to police. It also meant there was no way to *look at* a
+component while building one.
+
+Rebuilt as a Vite app importing the package through its own `exports` map
+(Node's self-reference), so: the palette copy is gone and cannot drift by
+construction, the drift check was deleted rather than maintained, the exports
+map is exercised on every build, and `npm run dev` is a real sandbox.
+
+It found a bug within minutes of first render, which is the argument for it.
+`Card` hardcoded `shadow-lg` in its base classes, so
+`className="shadow-root-earth"` produced two `box-shadow` utilities at equal
+specificity and lost — the earth shadow silently never painted. Nothing
+errored; the class was right there in the DOM. Elevation is a `Card` prop now
+(`raised` / `rooted` / `none`).
+
+The general lesson is the one this system keeps relearning in new costumes: **a
+component that hardcodes a property cannot be overridden by a class, and the
+failure is silent.** Same shape as the opacity-modifier bug and the
+preset-content bug — correct in the source, wrong in the browser.
+
+**Earth's behavior finally shipped.**
+`philosophy.md` has assigned each element a color *and* a behavior since v0.1 —
+fire glows, water morphs on hover, air is the motion language. Earth's was
+"wide, low shadows that root elements into the page," and it was the one that
+never got a token; only glows existed. `--shadow-root-earth` closes it. Worth
+noting as a category: documentation that describes an intention is
+indistinguishable from documentation that describes a feature, until someone
+looks for the token.
+
+---
+
 **The Tailwind preset declares its own content globs.**
 Found the first time a packaged component was actually rendered downstream:
 the kanji register came out in the body font. Cause — the consumer's
@@ -140,13 +234,16 @@ mark back toward the source.** Known and accepted: air's four-corner form is
 close to the common "fullscreen/scan" UI idiom, which is tolerable because
 element marks always appear in element contexts with a label.
 
-**The showcase needed its own reduced-motion guard.**
+**The showcase needed its own reduced-motion guard.** *(obsolete as of v0.7 —
+the showcase imports `tokens.css` now and inherits the guard. Kept because the
+lesson generalises: a standalone copy does not inherit later fixes, and the
+cost shows up as a silent behavioural difference rather than an error.)*
 `tokens.css` gates every entrance on `prefers-reduced-motion`, but
-`showcase/index.html` inlines its own CSS rather than importing tokens, so it
+`showcase/index.html` inlined its own CSS rather than importing tokens, so it
 never inherited that block and had been animating regardless of the setting.
-Fixed by duplicating the guard there. This is the recurring cost of the
-showcase being deliberately standalone — the same reason its palette needs
-check #5.
+Fixed at the time by duplicating the guard there. This was the recurring cost
+of the showcase being deliberately standalone — the same reason its palette
+needed a dedicated drift check.
 
 **`document.fonts.check()` cannot verify glyph coverage.**
 Worth recording because it looks like the right API and is confidently wrong:

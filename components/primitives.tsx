@@ -58,41 +58,99 @@ export function Button({
    The "Water" behavior still lives here — it's the hover morph (lift + pooling
    glow), not the glass tint. Pass accent to change which element leads. */
 
+type CardAccent = "fire" | "water" | "earth" | "air";
+
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * The hover morph — lift + pooling glow. **Visual only.** It does not make
+   * the card clickable, focusable, or announced as a control.
+   *
+   * Defaults to `false` as of v0.7. It used to default to `true`, which gave
+   * every card `cursor-pointer` and a lift while providing no focus ring, no
+   * role and no keyboard path — an affordance that lied to a mouse user and
+   * did not exist for a keyboard one. If you want a clickable card, use
+   * `CardLink`: activation is the element's job, not a styling prop's.
+   */
   interactive?: boolean;
   /* All four elements, so a Fourfold cell can carry its own accent. Water
      stays the default — the glass/pooling behaviour is water's by rights. */
-  accent?: "fire" | "water" | "earth" | "air";
+  accent?: CardAccent;
+  /**
+   * How the card sits on the page.
+   *
+   *   "raised"  the default neutral drop shadow
+   *   "rooted"  earth's behaviour — offset down and tightly spread, so it
+   *             reads as weight rather than emission (foundations.md)
+   *   "none"    flat; for a card inside another surface
+   *
+   * This is a prop rather than something you pass via className because
+   * `shadow-lg` used to be hardcoded into the base classes: passing
+   * `className="shadow-root-earth"` produced two box-shadow utilities at the
+   * same specificity, and which one won came down to their order in the
+   * generated stylesheet — so the override silently did nothing. Found by
+   * rendering it in the showcase, which is the reason the showcase renders
+   * real components now.
+   */
+  elevation?: "raised" | "rooted" | "none";
 }
 
-const cardGlow: Record<NonNullable<CardProps["accent"]>, string> = {
+const cardElevation: Record<
+  NonNullable<CardProps["elevation"]>,
+  string
+> = {
+  raised: "shadow-lg",
+  rooted: "shadow-root-earth",
+  none: "",
+};
+
+const cardGlow: Record<CardAccent, string> = {
   fire: "hover:shadow-glow-fire",
   water: "hover:shadow-glow-water",
   earth: "hover:shadow-glow-earth",
   air: "hover:shadow-glow-air",
 };
 
-const cardBorder: Record<NonNullable<CardProps["accent"]>, string> = {
+const cardBorder: Record<CardAccent, string> = {
   fire: "hover:border-fire/40",
   water: "hover:border-water/40",
   earth: "hover:border-earth/40",
   air: "hover:border-air/40",
 };
 
+const cardRing: Record<CardAccent, string> = {
+  fire: "focus-visible:ring-fire",
+  water: "focus-visible:ring-water",
+  earth: "focus-visible:ring-earth",
+  air: "focus-visible:ring-air",
+};
+
+/* No shadow here — elevation is a prop, see the note on CardProps.elevation. */
+const CARD_BASE = "bg-sumi-2 border border-line rounded-md p-6";
+
+/* The hover morph, shared by Card (opt-in) and CardLink (always on). No
+   `cursor-pointer` here — that belongs to the thing that is actually
+   clickable, which is CardLink. */
+function cardMorph(accent: CardAccent) {
+  return cx(
+    cardBorder[accent],
+    cardGlow[accent],
+    "hover:-translate-y-1 transition-all duration-default ease-air",
+  );
+}
+
 export function Card({
-  interactive = true,
+  interactive = false,
   accent = "water",
+  elevation = "raised",
   className,
   ...props
 }: CardProps) {
-  const glow = cardGlow[accent];
-  const border = cardBorder[accent];
   return (
     <div
       className={cx(
-        "bg-sumi-2 border border-line rounded-md p-6 shadow-lg",
-        interactive &&
-          `${border} ${glow} hover:-translate-y-1 transition-all duration-default ease-air cursor-pointer`,
+        CARD_BASE,
+        cardElevation[elevation],
+        interactive && cardMorph(accent),
         className,
       )}
       {...props}
@@ -100,20 +158,95 @@ export function Card({
   );
 }
 
-/* --------------------------------- Input/Label -------------------------------- */
+/* --------------------------- CardLink / CardButton --------------------------- */
+/* Card's clickable twins. They render a real <a> / <button>, so they are
+   focusable, keyboard-activatable and correctly announced — none of which a
+   <div> with `cursor-pointer` ever was. The focus ring matches Button,
+   NavLink and Link, so keyboard focus looks like one system everywhere.
+   Ring offset is --void, since a card sits on the page rather than on a panel.
 
-export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  const { className, ...rest } = props;
+   Two components rather than one polymorphic `as` prop on purpose: navigating
+   and acting are different things, and the split keeps each one exactly typed
+   (an <a> has href, a <button> has type) instead of unioning them into
+   something that accepts both and validates neither. */
+
+const cardClickable = (accent: CardAccent) =>
+  cx(
+    CARD_BASE,
+    "shadow-lg block text-left cursor-pointer",
+    cardMorph(accent),
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void",
+    cardRing[accent],
+  );
+
+export interface CardLinkProps
+  extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  accent?: CardAccent;
+}
+
+export function CardLink({
+  accent = "water",
+  className,
+  ...props
+}: CardLinkProps) {
+  return <a className={cx(cardClickable(accent), className)} {...props} />;
+}
+
+export interface CardButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  accent?: CardAccent;
+}
+
+export function CardButton({
+  accent = "water",
+  type = "button",
+  className,
+  ...props
+}: CardButtonProps) {
+  return (
+    <button
+      type={type}
+      className={cx(cardClickable(accent), "w-full", className)}
+      {...props}
+    />
+  );
+}
+
+/* --------------------------------- Input/Label -------------------------------- */
+/* `controlBase` is shared by Input, Textarea and Select (components/forms.tsx)
+   so all three sit at the same elevation tier and focus identically. An input
+   is a RECESSED surface — bg-sumi, not sumi-2 — because it usually sits on a
+   sumi-2 panel, and matching the panel would flatten it (foundations.md). */
+
+export const controlBase = cx(
+  "bg-sumi border text-washi px-4 py-3 rounded w-full",
+  "focus:outline-none transition-all duration-default",
+  "placeholder:text-washi-dim",
+  // Disabled had no visual at all before v0.7 — a disabled field looked
+  // identical to an editable one.
+  "disabled:opacity-50 disabled:cursor-not-allowed",
+);
+
+/* Border + focus treatment by validity. An invalid field also looked
+   identical to a valid one until v0.7; colour is not the only carrier here,
+   since FormField renders ErrorText alongside it. */
+export function controlValidity(invalid?: boolean) {
+  return invalid
+    ? "border-error/60 focus:border-error-text focus:shadow-glow-fire-soft"
+    : "border-line-strong focus:border-fire focus:shadow-glow-fire-soft";
+}
+
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  /** Renders the error treatment and sets `aria-invalid`. `FormField` wires this for you. */
+  invalid?: boolean;
+}
+
+export function Input({ invalid, className, ...rest }: InputProps) {
   return (
     <input
-      className={cx(
-        // bg-sumi, not sumi-2: an input is a recessed surface, and it usually
-        // sits ON a sumi-2 panel. Matching the panel would flatten it.
-        "bg-sumi border border-line-strong text-washi px-4 py-3 rounded w-full",
-        "focus:border-fire focus:shadow-glow-fire-soft focus:outline-none transition-all duration-default",
-        "placeholder:text-washi-dim",
-        className,
-      )}
+      aria-invalid={invalid || undefined}
+      className={cx(controlBase, controlValidity(invalid), className)}
       {...rest}
     />
   );

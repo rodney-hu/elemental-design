@@ -8,11 +8,29 @@ new color variant" questions are already answered there.
 
 `primitives.tsx`
 - `Button` — variants: `primary` (fire), `air` (elevated/featured), `secondary` (neutral)
-- `Card` — accent: `water` (default, fluid glass) or `air` (elevated)
-- `Input`, `Label`, `ErrorText`
+- `Card` — a solid raised panel. `accent`: `fire`, `water` (default), `earth`, `air`
+  — sets which element leads the hover morph. `interactive` is **visual only** and
+  defaults to `false`; for a genuinely clickable card use `CardLink`, which
+  renders an `<a>` and carries the system focus ring.
+- `CardLink` / `CardButton` — `Card`'s clickable twins. Semantics come from the
+  element, not a prop: navigate with one, act with the other.
+- `Input` (with `invalid` / disabled states), `Label`, `ErrorText`
 - `Badge` — one tone per element: `fire`, `water`, `earth`, `air`
 - `Status` — semantic pills: `error`, `warning`, `success`
 - `CompareRow` — old-way/new-way comparison rows
+
+`typography.tsx`
+- `Heading` — `level` 1–4. One size per level, so a project cannot end up with
+  three different `<h2>` sizes (it did once — see `docs/decisions.md`).
+- `Eyebrow` — the uppercase mono micro-label. Never renders an `<h*>`.
+- `Prose` — body copy at `--measure`, on a panel by default.
+- `Text`, `Link`
+
+`forms.tsx`
+- `FormField` — wires `Label` + control + `ErrorText` together with a generated
+  id, `aria-describedby` and `aria-invalid`. No single component can do this;
+  the wiring lives *between* them, which is why it never got done by hand.
+- `Textarea`, `Select`, `Checkbox`, `Radio`, `RadioGroup` (fieldset + legend)
 
 ## Conventions
 
@@ -28,9 +46,7 @@ new color variant" questions are already answered there.
 
 ## Still to build
 
-Nothing yet has a real usage case beyond the showcase page. Candidates,
-add here as they come up:
-- Modal / dialog shell
-- Toast / notification (semantic-status-driven)
-- Tabs
+- Modal / dialog shell (native `<dialog>`, focus trap, Escape)
+- Toast / notification (semantic-status-driven, `aria-live`)
+- Tabs (roving tabindex + ARIA)
 - Table

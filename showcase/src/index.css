@@ -1,0 +1,21 @@
+/**
+ * The showcase's stylesheet — again, written exactly as a consumer's is.
+ *
+ * Fonts and tokens are IMPORTED, not copied. The old standalone showcase
+ * inlined its own palette, which is how it silently fell two versions behind
+ * tokens.css and needed a dedicated drift check to catch it. There is nothing
+ * to drift from now.
+ */
+@import "../../tokens/fonts.css";
+@import "../../tokens/tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Step 3 of the setup in README.md: void is the page. Set once, at the root. */
+body {
+  background-color: var(--void);
+  color: var(--washi);
+  font-family: var(--font-body);
+}

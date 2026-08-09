@@ -119,6 +119,45 @@ canonical order for you.
 - Layouts lean asymmetric over centered where the content allows it —
   matches the *ma* (negative space) principle in `philosophy.md`.
 
+### Width — measure and containers
+
+- **Prose is capped at `--measure` (68ch).** This is the one readability
+  rule the system talked about for five versions without ever setting.
+  `Prose` applies it; if you're wrapping copy by hand, use
+  `max-w-measure`.
+- **Page width comes from the four containers** — `--container-sm` (640px,
+  a form or single article), `md` (896px, a reading page), `lg` (1152px,
+  the marketing default), `xl` (1344px, a wide dashboard). Use
+  `Container`, or `max-w-container-*`. A hand-typed `max-w-[62rem]` is
+  how one site ended up with three different content widths across three
+  page types; `genso-check` flags it.
+
+### Spacing — two scales, two jobs
+
+- `--space-xs` … `--space-2xl` (4–48px) are **component-scale**: space
+  inside and between objects.
+- `--space-3xl` … `--space-5xl` (72/96/144px) are **page-scale**: the
+  rhythm between sections. `--space-4xl` (96px) is the default; `5xl` is
+  a major break or hero margin.
+- The scale used to stop at 48px, which is why every project invented its
+  own section rhythm as an arbitrary `py-24`. `Section` applies `4xl` by
+  default — prefer it to hand-spacing a `<section>`.
+
+### Shadow — glow vs. weight
+
+Two shadow families, and they mean opposite things:
+
+- **Glows** (`shadow-glow-fire`, `-water`, `-earth`, `-air`) are radial
+  and centred. They read as *emission* — the object is lit, active,
+  being interacted with.
+- **`shadow-root-earth`** is offset down and tightly spread. It reads as
+  *weight* — the object pressing into the page. This is earth's behavior
+  half, per `philosophy.md`; it shipped in v0.7, having been described
+  since v0.1 with no token behind it.
+
+Never put both on the same object. That's two element behaviors at once,
+which is the same mistake as two accents at once.
+
 ### Element marks
 
 Two registers ship, both in `components/marks.tsx`:

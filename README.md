@@ -9,12 +9,12 @@ every project, so no project starts from a blank canvas.
 |---|---|---|
 | `docs/` | The *why* — philosophy, operating rules, decision log | Before changing a token, or when you forget why something is the way it is |
 | `tokens/` | The *what* — colors, type, spacing, motion as CSS variables + the Tailwind preset + font loading | Every new project starts here |
-| `components/` | The *how* — UI primitives (Button, Card, Input, Badge, Status, Compare) plus the element marks and Silhouette | Building any interface |
-| `layout/` | Page-level shells (Sidebar, Dashboard shell, Centered form) and the Fourfold set | Starting a new page type |
+| `components/` | The *how* — UI primitives, typography (Heading, Eyebrow, Prose), form fields, plus the element marks and Silhouette | Building any interface |
+| `layout/` | Structure (Container, Section, Stack, Grid), page shells (Sidebar, Dashboard, Centered form) and the Fourfold set | Starting a new page type |
 | `motion/` | Animation principles, CSS keyframes, and the JS constants for framer-motion | Adding any transition or entrance animation |
 | `assets/` | Self-hosted fonts (subsetted, no CDN dependency) and logo files | Rarely — `tokens/fonts.css` wires these up for you |
 | `showcase/` | The living style guide — a real page that demonstrates the whole system | Reference, and the seed of the public showcase site |
-| `scripts/` | `check-tokens.mjs` — the integrity check that keeps the above honest | Run it via `npm run check` |
+| `scripts/` | The rules that keep the above honest — internal integrity checks, plus the usage rules that also run against consuming projects | `npm run check` here, `npx genso-check ./src` there |
 
 ## Using it in a project
 
@@ -25,8 +25,30 @@ copy. See `docs/decisions.md`. Everything below is designed so there is
 exactly one copy of every value.
 
 ```bash
-npm install "file:../elemental-design"   # sibling folder; swap for the git URL once pushed
+npm install github:rodney-hu/elemental-design#v0.7.0   # pin the tag
+npm install "file:../elemental-design"                 # or a sibling folder, while developing the system itself
 ```
+
+Then let the scaffold do the wiring below for you:
+
+```bash
+npx genso init
+```
+
+It writes `tailwind.config.js` with the content spread already correct, the CSS
+import block, and the `body` void rule. Steps 1–3 document what it writes, so
+you can do it by hand or check its work.
+
+**⚠️ Next.js:** the exports map points at raw `.tsx` source (that's how the
+Tailwind preset can scan it). Next must be told to transpile the package:
+
+```js
+// next.config.js
+module.exports = { transpilePackages: ["elemental-design"] };
+```
+
+Without it the build fails on the first `import` with a syntax error that
+doesn't mention this package. Vite needs nothing — it transpiles by default.
 
 **1. Tailwind — extend the preset, never paste it:**
 
@@ -80,11 +102,20 @@ Short passages read well directly on the void; put sustained prose on a panel.
 **4. Components and motion — import them:**
 
 ```ts
-import { Button, Card, Status } from "elemental-design/primitives";
+import { Button, Card, CardLink, Status } from "elemental-design/primitives";
+import { Heading, Eyebrow, Prose, Text, Link } from "elemental-design/typography";
+import { FormField, Textarea, Select } from "elemental-design/forms";
+import { Container, Section, Stack, Grid } from "elemental-design/structure";
 import { ElementMark, Silhouette } from "elemental-design/marks";
 import { Fourfold, DashboardShell, Sidebar } from "elemental-design/shells";
 import { easeAir, duration, riseInOnScroll } from "elemental-design/motion";
 ```
+
+Reach for `Heading` / `Eyebrow` / `Prose` and `Section` / `Container` rather
+than hand-assembling `font-head text-2xl tracking-display`. The tokens make the
+right value *available*; these components make it the **only** one — which is
+the half that was missing when a single site ended up with three different
+`<h2>` sizes and five competing tracking values.
 
 **5. Build with the semantic classes** (`bg-fire`, `text-water-text`,
 `shadow-glow-fire`, `border-line`) — never a hand-typed hex. If a token is
@@ -116,9 +147,26 @@ Verifies that the Tailwind preset only references tokens that exist, that
 has hand-typed a hex, a `white/xx` literal, or an opacity modifier on a color
 that can't take one. Run it after touching tokens, the preset, or motion.
 
+**In a consuming project, lint your own source too:**
+
+```bash
+npx genso-check ./src
+```
+
+Every rule this system has learned was broken *downstream*, not here — the
+type scale, the tracking values, the second easing curve, the invented
+durations. A checker that only guards this repo guards the wrong thing. Wire
+it into the project's `build` script.
+
+Suppress a rule where you genuinely mean it, with a reason:
+
+```tsx
+{/* genso-allow: soft-radius — matches the embedded Stripe widget */}
+```
+
 ## Status
 
-**v0.6 — in production.** Shipped in `gtm-portfolio` (rodneyhu.com).
+**v0.7 — in production.** Shipped in `gtm-portfolio` (rodneyhu.com).
 
 v0.4 fixed the bugs that surfaced building that site and closed the gaps that
 forced it to invent its own type scale. v0.5 added the element marks,
@@ -126,6 +174,12 @@ object-bound halos and the Fourfold — the pieces needed to express mastery of
 all four elements without loosening the restraint that makes the system work.
 v0.6 made void the page and ink the panel, turning the neutrals into a real
 elevation scale.
+
+v0.7 attacked the gap between having good rules and never starting from
+scratch. Every rule this system learned was broken *downstream* — so the
+checker now runs there (`genso-check`), the layer that kept getting reinvented
+badly now ships (typography, structure, form fields), and `genso init` writes
+the wiring that had two documented ways to get silently wrong.
 
 Elemental Aura, the prior system, is archived. This is the only one.
 

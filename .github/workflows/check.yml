@@ -1,0 +1,37 @@
+name: check
+
+# Enforcement that only runs locally is enforcement that stops running. Every
+# rule in this repo was learned from something that shipped broken; the point
+# of CI is that the rules keep applying when nobody remembers to run them.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Token graph, CSS↔JS motion mirror, contrast on all three elevation
+      # tiers, alpha caps, mark drawing rules, plus the usage rules over this
+      # package's own components and the showcase.
+      - name: Genso integrity + usage rules
+        run: npm run check
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # The showcase is a real consumer: if it builds, the exports map, the
+      # preset's content globs and the font pipeline all still work end to end.
+      - name: Build showcase
+        run: npm run build:showcase

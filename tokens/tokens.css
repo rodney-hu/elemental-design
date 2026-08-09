@@ -163,13 +163,36 @@
   --tracking-label: 0.1em; /* every uppercase mono label */
   --tracking-display: -0.015em; /* headings */
 
-  /* — Spacing — bias toward more space, not less — */
+  /* — Measure — the maximum line length for reading —
+     The system talked about prose readability from v0.1 and never set the one
+     rule that governs it. 68ch lands around 70-75 characters at --text-base,
+     inside the 45-75 range where line length stops costing comprehension.
+     `Prose` applies this for you; reach for it directly only when wrapping
+     copy you can't route through that component. */
+  --measure: 68ch;
+
+  /* — Container widths — what "the page" is allowed to be —
+     Every project had been hand-typing a max-width, which is how one site
+     ended up with three different content widths on three page types. */
+  --container-sm: 40rem; /* 640px  — centered form, single article */
+  --container-md: 56rem; /* 896px  — default reading page */
+  --container-lg: 72rem; /* 1152px — standard marketing page */
+  --container-xl: 84rem; /* 1344px — wide dashboard */
+
+  /* — Spacing — bias toward more space, not less —
+     xs…2xl are component-scale: the space *inside* and *between* objects.
+     3xl…5xl are page-scale: the rhythm between sections. The scale used to
+     stop at 48px, which meant every project invented its own section rhythm
+     — usually as an arbitrary `py-24`. */
   --space-xs: 0.25rem; /* 4px  — icon + label */
   --space-sm: 0.5rem; /* 8px  — tight controls */
   --space-md: 1rem; /* 16px — minimum content spacing */
   --space-lg: 1.5rem; /* 24px — default between cards */
   --space-xl: 2rem; /* 32px — section spacing */
   --space-2xl: 3rem; /* 48px — page breaks */
+  --space-3xl: 4.5rem; /* 72px  — tight section rhythm */
+  --space-4xl: 6rem; /* 96px  — DEFAULT section rhythm */
+  --space-5xl: 9rem; /* 144px — major page break, hero margins */
 
   /* — Radius — sharp, not soft. See foundations.md — */
   --radius-sm: 2px; /* buttons, inputs, chips */
@@ -184,6 +207,20 @@
   --duration-fast: 150ms; /* micro-interactions — button press */
   --duration-default: 400ms; /* standard hover/transition */
   --duration-slow: 700ms; /* entrances */
+
+  /* — Earth's rooting shadow —
+     philosophy.md has given every element a colour AND a behavior since v0.1:
+     fire glows, water morphs on hover, air is the motion language. Earth's was
+     "wide, low shadows that root elements into the page" — and it was the one
+     that never got a token, so only glows existed and earth was a colour with
+     no behavior attached.
+
+     Not a glow: glows are radial and centred (`0 0 40px`), reading as emission.
+     This is offset down and tightly spread (`-24px`), reading as *weight* —
+     the object pressing into the page rather than lighting it. Use it on
+     something that should feel settled and permanent; never together with a
+     glow on the same object, which would be two behaviors at once. */
+  --shadow-root-earth: 0 18px 40px -24px rgb(var(--earth-rgb) / 0.55);
 
   /* — Background aura —
      A single fire radial anchored to a section's top corner. See the aura
