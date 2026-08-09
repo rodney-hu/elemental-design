@@ -2,7 +2,42 @@
 
 Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
-## v0.7 — current
+## v1.0 — current
+
+**The v0.1 "still to build" list, built.** Each of the four leans on a native
+element, so the browser supplies the behaviour hand-rolled versions
+reimplement and get wrong.
+
+- `Modal` — native `<dialog>`. `showModal()` gives a focus trap,
+  Escape-to-close and top-layer stacking for free. A `close` listener syncs
+  the native close back to React state; without it the dialog closes visually
+  while `open` stays true and the next render reopens it.
+- `ToastProvider` / `useToast` — one `aria-live` region for the stack,
+  portaled to `document.body`. The entrance reuses the system's own `.rise`
+  utility rather than a second animation path, so it inherits the
+  reduced-motion guard instead of duplicating it.
+- `Tabs` / `TabList` / `Tab` / `TabPanel` — roving tabindex plus arrow, Home
+  and End. Without it every inactive tab is a Tab stop.
+- `Table` and friends — native `<table>` semantics inside an `overflow-x`
+  container, so a wide table scrolls in its own box.
+
+**Fixed: the corner aura had been widening the page since v0.4.**
+`.aura-r::before` is pushed ~45% off the section's right edge by design, and
+an overflowing child widens the document — so every page with a right-side
+aura had a horizontal scrollbar. Fixed with `overflow-x: clip` on `.aura`
+(`clip`, not `hidden`, which would force the other axis to `auto` and break
+`position: sticky` inside). Nothing is lost visually; the clipped region was
+off-page. Found by deploying the style guide and viewing it narrow — this bug
+is invisible to every static check the system has.
+
+**Also**
+- Style guide deployed: [genso-design.vercel.app](https://genso-design.vercel.app)
+- README gains a versioning policy and a doc reading order.
+- CI actions bumped to v5.
+
+**Not breaking.** Everything in v0.7 keeps working.
+
+## v0.7
 
 **Closes the gap between having good rules and never starting from scratch.**
 Reading the whole decision log back surfaced the thing none of its entries said

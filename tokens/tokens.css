@@ -317,6 +317,22 @@
 .aura {
   position: relative;
   isolation: isolate;
+
+  /* The aura is deliberately pushed ~45% off the horizontal edge, which means
+     `.aura-r::before` extends past the section's right edge — and an
+     overflowing child widens the page, so the whole document gained a
+     horizontal scrollbar. Confirmed in the browser: an 816px aura translated
+     +367px off a 665px viewport produced a 1032px scrollWidth, which is
+     exactly the sum.
+
+     `clip` rather than `hidden` on purpose: `overflow-x: hidden` forces the
+     other axis to `auto`, turning every aura section into a scroll container
+     and breaking `position: sticky` inside it. `clip` constrains one axis and
+     leaves the other genuinely visible.
+
+     Nothing is lost visually — the clipped part was off-page, so it was only
+     ever reachable by scrolling sideways to look at a glow. */
+  overflow-x: clip;
 }
 
 .aura::before {

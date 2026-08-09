@@ -65,6 +65,26 @@ The general form of the mistake is worth keeping: *a styling prop should not
 confer semantics.* `interactive` describes how something looks on hover; whether
 it can be activated is the element's job.
 
+**The corner aura had been widening the page since v0.4.**
+Found the first time the showcase was viewed on a real deployment at a narrow
+width. `.aura-r::before` is pushed ~45% off the section's right edge by design
+— but an overflowing child widens the document, so every page with a
+right-side aura had a horizontal scrollbar. Measured: an 816px aura translated
++367px off a 665px viewport gives a 1032px `scrollWidth`, exactly the sum.
+
+Fixed with `overflow-x: clip` on `.aura`. `clip` and not `hidden`:
+`overflow-x: hidden` forces the other axis to `auto`, which would turn every
+aura section into a scroll container and silently break `position: sticky`
+inside it. Nothing is lost visually — the clipped region was off-page.
+
+Two things worth keeping. **This shipped in v0.4 and survived three versions**,
+because the only place it was ever viewed was a standalone HTML file that
+happened not to use a right-side aura at a narrow width. And **it is invisible
+to every check this system has**: it isn't a token violation, a contrast
+failure or a lint error — it only exists at a particular viewport, in a
+browser. Static rules can't find this class of bug, which is the argument for
+the showcase being a real deployed page rather than a file you open locally.
+
 **The showcase renders the real components, and immediately earned its keep.**
 It used to be a 1040-line standalone HTML file that reimplemented every
 component by hand and carried its own copy of the palette — a third place

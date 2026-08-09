@@ -3,6 +3,8 @@
 Genso (元素) — Rodney's personal design system. Built once, reused across
 every project, so no project starts from a blank canvas.
 
+**Live style guide: [genso-design.vercel.app](https://genso-design.vercel.app)**
+
 ## Folder map
 
 **New here?** Read `docs/philosophy.md` (what the system believes), then
@@ -18,7 +20,7 @@ and need to know whether it was already tried.
 | `layout/` | Structure (Container, Section, Stack, Grid), page shells (Sidebar, Dashboard, Centered form) and the Fourfold set | Starting a new page type |
 | `motion/` | Animation principles, CSS keyframes, and the JS constants for framer-motion | Adding any transition or entrance animation |
 | `assets/` | Self-hosted fonts (subsetted, no CDN dependency) and logo files | Rarely — `tokens/fonts.css` wires these up for you |
-| `showcase/` | The living style guide — a real page that demonstrates the whole system | Reference, and the seed of the public showcase site |
+| `showcase/` | The living style guide — a Vite app rendering the real components. Live at **[genso-design.vercel.app](https://genso-design.vercel.app)** | `npm run dev` to see a component while building one |
 | `scripts/` | The rules that keep the above honest — internal integrity checks, plus the usage rules that also run against consuming projects | `npm run check` here, `npx genso-check ./src` there |
 
 ## Using it in a project
@@ -30,7 +32,7 @@ copy. See `docs/decisions.md`. Everything below is designed so there is
 exactly one copy of every value.
 
 ```bash
-npm install github:rodney-hu/elemental-design#v0.7.0   # pin the tag
+npm install github:rodney-hu/elemental-design#v1.0.0   # pin the tag
 npm install "file:../elemental-design"                 # or a sibling folder, while developing the system itself
 ```
 
@@ -110,6 +112,9 @@ Short passages read well directly on the void; put sustained prose on a panel.
 import { Button, Card, CardLink, Status } from "elemental-design/primitives";
 import { Heading, Eyebrow, Prose, Text, Link } from "elemental-design/typography";
 import { FormField, Textarea, Select } from "elemental-design/forms";
+import { Modal, ToastProvider, useToast } from "elemental-design/overlay";
+import { Tabs, TabList, Tab, TabPanel } from "elemental-design/tabs";
+import { Table, TableHead, TableBody, TableRow, TableCell } from "elemental-design/table";
 import { Container, Section, Stack, Grid } from "elemental-design/structure";
 import { ElementMark, Silhouette } from "elemental-design/marks";
 import { Fourfold, DashboardShell, Sidebar } from "elemental-design/shells";
@@ -186,7 +191,8 @@ Suppress a rule where you genuinely mean it, with a reason:
 
 ## Status
 
-**v0.7 — in production.** Shipped in `gtm-portfolio` (rodneyhu.com).
+**v1.0 — in production.** Shipped in `gtm-portfolio` (rodneyhu.com); the
+living style guide is at [genso-design.vercel.app](https://genso-design.vercel.app).
 
 v0.4 fixed the bugs that surfaced building that site and closed the gaps that
 forced it to invent its own type scale. v0.5 added the element marks,
@@ -200,6 +206,11 @@ scratch. Every rule this system learned was broken *downstream* — so the
 checker now runs there (`genso-check`), the layer that kept getting reinvented
 badly now ships (typography, structure, form fields), and `genso init` writes
 the wiring that had two documented ways to get silently wrong.
+
+v1.0 closed the v0.1 "still to build" list — modal, toast, tabs, table — and
+put the style guide on a real deployment, which immediately found a
+horizontal-overflow bug in the corner aura that had survived three versions
+because nobody had viewed it narrow.
 
 Elemental Aura, the prior system, is archived. This is the only one.
 

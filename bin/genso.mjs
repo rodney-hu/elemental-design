@@ -256,7 +256,7 @@ if (!installed) {
   console.log(
     `  ⚠️  elemental-design is not in node_modules yet:
 
-       npm install github:rodney-hu/elemental-design#v0.7.0
+       npm install github:rodney-hu/elemental-design#v1.0.0
 `,
   );
 }
