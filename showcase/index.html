@@ -107,8 +107,8 @@
     --air-soft: rgba(203, 161, 53, 0.18);
     --air-glow: rgba(203, 161, 53, 0.4);
     --air-glow-bold: rgba(203, 161, 53, 0.7);
-    --line: rgba(243, 238, 228, 0.09);
-    --line-strong: rgba(243, 238, 228, 0.18);
+    --line: rgba(243, 238, 228, 0.14);
+    --line-strong: rgba(243, 238, 228, 0.24);
 
     /* Element halos — object-bound, unlike the background aura. Bright
        because they are emphasis on a thing, not decoration on a page. */
@@ -136,10 +136,10 @@
   html, body {
     margin: 0;
     padding: 0;
-    background: var(--sumi);
+    background: var(--void);
     color: var(--washi);
     font-family: var(--font-body);
-    -webkit-font-smoothing: antialiased;
+    /* No -webkit-font-smoothing: antialiased — see docs/decisions.md. */
     overflow-x: hidden;
   }
 
@@ -284,17 +284,9 @@
     max-width: 440px;
   }
 
-  /* ---------- void stage, marks, fourfold ---------- */
-  /* The .void scope bleeds full-width out of the centred wrap, so the stage
-     reads as a stage rather than a black card. --line re-binds here, per
-     tokens.css. */
-  .void-stage {
-    background: var(--void);
-    --line: rgba(243, 238, 228, 0.14);
-    --line-strong: rgba(243, 238, 228, 0.24);
-    box-shadow: 0 0 0 100vmax var(--void);
-    clip-path: inset(0 -100vmax);
-  }
+  /* ---------- marks, fourfold ---------- */
+  /* No void-stage class any more — the page itself is void, so there is
+     nothing to opt into. Panels raise off it instead. See docs/decisions.md. */
 
   .sub-head {
     font-family: var(--font-head);
@@ -347,7 +339,10 @@
     gap: 20px;
   }
   /* Peers: identical padding, border, and halo strength in every cell. */
+  /* Peers: identical surface, padding, border and halo strength in every cell.
+     Raised off the void as a solid panel, like every other module. */
   .ff-cell {
+    background: var(--sumi-2);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     padding: 24px;
@@ -368,7 +363,7 @@
     border: 1px solid var(--line);
   }
   .swatch {
-    background: var(--sumi);
+    background: var(--sumi-2);
     padding: 24px 18px 22px;
     min-height: 230px;
     display: flex;
@@ -631,7 +626,7 @@
     border: 1px solid var(--line);
   }
   .mech {
-    background: var(--sumi);
+    background: var(--sumi-2);
     padding: 30px 22px;
   }
   .mech-kanji {
@@ -908,7 +903,7 @@
     </div>
   </section>
 
-  <section class="void void-stage">
+  <section>
     <div class="section-head">
       <div>
         <p class="section-num">05</p>

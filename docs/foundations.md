@@ -18,12 +18,27 @@ explains *why*, this file says *what to actually do*.
   fixed-alpha by design and cannot take one — use them as-is.
 - Neutral hairlines and borders use `border-line` / `border-line-strong`.
   Never `border-white/10`.
-- **Pure black is a stage, not a background.** `--void` is opt-in via the
-  `.void` class, for element marks, silhouettes and Fourfold sets. `--sumi`
-  ink stays the reading surface — don't set void as a page default. Inside
-  `.void`, `--line` re-binds stronger (0.14 / 0.24) because a hairline at
-  ink strength starts dissolving on black; that happens automatically, so
-  keep using plain `border-line`.
+### Elevation — three tiers, darkest at the back
+
+| Tier | Token | What sits here |
+|---|---|---|
+| Page | `--void` (#000000) | the stage — nothing but the page |
+| Recessed | `--sumi` | inputs, wells, code blocks, insets |
+| Raised | `--sumi-2` | cards, modals, anything holding content |
+
+- **Void is the page background.** Set it once at the app root
+  (`body { background-color: var(--void) }`). Don't paint sections black —
+  they already are.
+- **Content lives on a panel.** Raise anything substantial off the void with
+  `--sumi-2`. Short passages directly on black are fine and read well;
+  **sustained prose is not** — put a case study body, a long form, or any
+  multi-paragraph block on a panel.
+- **Panels are solid.** No opacity tint, no `backdrop-blur`. A translucent
+  panel on a flat black page composites to nearly nothing (1.09:1 against
+  the page, versus 1.19:1 solid) and the blur has nothing behind it to blur.
+  Translucency is only worth it where content genuinely scrolls underneath.
+- **Don't stack a tier on itself.** An input on a panel goes to `--sumi`, not
+  `--sumi-2` — matching the surface it sits on flattens it.
 
 ### The Fourfold Rule
 

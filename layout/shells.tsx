@@ -93,7 +93,7 @@ export function Sidebar({
     <aside
       className={cx(
         SIDEBAR_W,
-        "bg-sumi-2/80 backdrop-blur-lg border-r border-line p-6 h-screen fixed",
+        "bg-sumi-2 border-r border-line p-6 h-screen fixed",
         className,
       )}
       {...props}
@@ -132,7 +132,7 @@ export function DashboardShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen bg-sumi">
+    <div className="flex h-screen bg-void">
       {sidebar}
       <main className={cx("flex-1 overflow-y-auto p-8", SIDEBAR_OFFSET)}>
         {children}
@@ -143,8 +143,8 @@ export function DashboardShell({
 
 export function CenteredForm({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-sumi flex items-center justify-center p-8">
-      <div className="max-w-md w-full bg-sumi-2/60 backdrop-blur-md border border-line rounded-md p-8 shadow-lg">
+    <div className="min-h-screen bg-void flex items-center justify-center p-8">
+      <div className="max-w-md w-full bg-sumi-2 border border-line rounded-md p-8 shadow-lg">
         {children}
       </div>
     </div>

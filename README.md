@@ -62,7 +62,22 @@ their glow. Nothing errors. See `docs/decisions.md`.
 The font files resolve straight out of the package — no copying `.woff2`
 files into each project.
 
-**3. Components and motion — import them:**
+**3. Set the page to void.** The system's surfaces are a three-tier elevation
+scale, and the page is the bottom of it:
+
+```css
+body { background-color: var(--void); color: var(--washi); }
+```
+
+| Tier | Token | What sits here |
+|---|---|---|
+| Page | `--void` (#000000) | the stage — nothing but the page |
+| Recessed | `--sumi` | inputs, wells, code blocks |
+| Raised | `--sumi-2` | cards, modals, anything holding content |
+
+Short passages read well directly on the void; put sustained prose on a panel.
+
+**4. Components and motion — import them:**
 
 ```ts
 import { Button, Card, Status } from "elemental-design/primitives";
@@ -71,7 +86,7 @@ import { Fourfold, DashboardShell, Sidebar } from "elemental-design/shells";
 import { easeAir, duration, riseInOnScroll } from "elemental-design/motion";
 ```
 
-**4. Build with the semantic classes** (`bg-fire`, `text-water-text`,
+**5. Build with the semantic classes** (`bg-fire`, `text-water-text`,
 `shadow-glow-fire`, `border-line`) — never a hand-typed hex. If a token is
 missing, add it to `tokens/tokens.css` here, then use it. `npm run check`
 fails the build if a component hand-types a color.
@@ -103,13 +118,14 @@ that can't take one. Run it after touching tokens, the preset, or motion.
 
 ## Status
 
-**v0.5 — in production.** Shipped in `gtm-portfolio` (rodneyhu.com).
+**v0.6 — in production.** Shipped in `gtm-portfolio` (rodneyhu.com).
 
-v0.4 fixed the bugs that surfaced building that site and closed the gaps
-that forced it to invent its own type scale. v0.5 added the void stage,
-object-bound halos, the element marks, and the Fourfold — the pieces needed
-to express mastery of all four elements without loosening the restraint that
-makes the system work.
+v0.4 fixed the bugs that surfaced building that site and closed the gaps that
+forced it to invent its own type scale. v0.5 added the element marks,
+object-bound halos and the Fourfold — the pieces needed to express mastery of
+all four elements without loosening the restraint that makes the system work.
+v0.6 made void the page and ink the panel, turning the neutrals into a real
+elevation scale.
 
 Elemental Aura, the prior system, is archived. This is the only one.
 

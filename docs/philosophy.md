@@ -29,7 +29,7 @@ Neither is decorative; both come from the same trait.
 | Element | Color | Trait | As a color | As a behavior |
 |---|---|---|---|---|
 | 火 Fire | Red (`--fire`) | Bold | The primary accent — the one color allowed to insist | Full-strength glow on primary actions; the strike |
-| 水 Water | Blue (`--water`) | Fluid | Secondary accent, info | Glassmorphism itself — panels that morph and pool light on hover |
+| 水 Water | Blue (`--water`) | Fluid | Secondary accent, info | The hover morph — panels lift and pool light rather than switching state |
 | 土 Earth | Green (`--earth`) | Grounded | Stability, success states | Wide, low shadows that root elements into the page |
 | 風 Air | Gold (`--air`) | Formless | The elevated/premium accent | The motion language — fade and rise, ease-out, never bounce |
 

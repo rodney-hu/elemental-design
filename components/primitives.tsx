@@ -49,8 +49,14 @@ export function Button({
 }
 
 /* ----------------------------------- Card ----------------------------------- */
-/* The "Water" behavior lives here by default — fluid glass, morphs on hover.
-   Pass accent="air" for the elevated/featured treatment instead. */
+/* A raised panel on the void. Solid --sumi-2, not a translucent tint: the page
+   is pure black, so a 60%-opacity panel composited to rgb(16 14 13) — a 1.09:1
+   separation that barely read as a surface. Solid gives 1.19:1 and the module
+   actually looks like an object. It also drops a backdrop-blur that had nothing
+   behind it to blur.
+
+   The "Water" behavior still lives here — it's the hover morph (lift + pooling
+   glow), not the glass tint. Pass accent to change which element leads. */
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   interactive?: boolean;
@@ -84,7 +90,7 @@ export function Card({
   return (
     <div
       className={cx(
-        "bg-sumi-2/60 backdrop-blur-md border border-line rounded-md p-6 shadow-lg",
+        "bg-sumi-2 border border-line rounded-md p-6 shadow-lg",
         interactive &&
           `${border} ${glow} hover:-translate-y-1 transition-all duration-default ease-air cursor-pointer`,
         className,
@@ -101,7 +107,9 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       className={cx(
-        "bg-sumi-2 border border-line-strong text-washi px-4 py-3 rounded w-full",
+        // bg-sumi, not sumi-2: an input is a recessed surface, and it usually
+        // sits ON a sumi-2 panel. Matching the panel would flatten it.
+        "bg-sumi border border-line-strong text-washi px-4 py-3 rounded w-full",
         "focus:border-fire focus:shadow-glow-fire-soft focus:outline-none transition-all duration-default",
         "placeholder:text-washi-dim",
         className,

@@ -47,22 +47,26 @@
   --semantic-success-rgb: 34 197 94;
   --semantic-success-text-rgb: 74 222 128;
 
-  /* — Neutrals — */
-  --void: rgb(
-    var(--void-rgb)
-  ); /* pure black — a STAGE for marks and figures, not a
-                              background. Opt in with `.void`; never set it as
-                              the page default. See decisions.md. */
-  --sumi: rgb(var(--sumi-rgb)); /* ink — primary background */
-  --sumi-2: rgb(var(--sumi-2-rgb)); /* panel base, before glass tint / hover */
+  /* — Neutrals — three tiers of elevation, darkest at the back —
+       void    the page itself. Nothing sits at this level except the page.
+       sumi    recessed surfaces — wells, inputs, code blocks, insets.
+       sumi-2  raised panels — cards, modals, anything holding content.
+     Content lives on a panel; the void is the stage it stands on. Prose
+     directly on void is allowed but should be short — see foundations.md. */
+  --void: rgb(var(--void-rgb)); /* pure black — the page background */
+  --sumi: rgb(var(--sumi-rgb)); /* ink — recessed surfaces */
+  --sumi-2: rgb(var(--sumi-2-rgb)); /* ink, raised — panels and cards */
   --washi: rgb(var(--washi-rgb)); /* paper — primary text, incl. body prose */
   --washi-dim: rgb(
     var(--washi-dim-rgb)
   ); /* paper, muted — SECONDARY text only (meta, captions,
                               chips, nav). Never body copy — see decisions.md. */
 
-  --line: rgb(var(--washi-rgb) / 0.09); /* hairline dividers, card borders */
-  --line-strong: rgb(var(--washi-rgb) / 0.18); /* active/hover borders */
+  /* Hairlines are tuned for panels sitting on void. They were 0.09 / 0.18 back
+     when the page was ink; at that strength a border dissolves against black
+     and cards lose their edge. */
+  --line: rgb(var(--washi-rgb) / 0.14); /* hairline dividers, card borders */
+  --line-strong: rgb(var(--washi-rgb) / 0.24); /* active/hover borders */
 
   /* — Four elements — each a color AND a behavior. See philosophy.md — */
 
@@ -215,18 +219,22 @@
   --halo-size: 12rem;
 }
 
-/* — Void stage —
-   Opt-in pure black, for element marks, silhouettes and Fourfold sets.
-   Scoped rather than global on purpose: ink stays the reading surface, and
-   black is reserved for the moments where the glow has to carry.
+/* — Page surface —
+   Void is the page. Set this once, at the root of the app:
 
-   The --line re-bind is load-bearing. `washi / 0.09` composites to about
-   rgb(22 21 21) on black versus rgb(39 37 35) on --sumi, so hairlines lose
-   a little contrast exactly where cards most need an edge to survive. */
-.void {
-  background-color: var(--void);
-  --line: rgb(var(--washi-rgb) / 0.14);
-  --line-strong: rgb(var(--washi-rgb) / 0.24);
+     body { background-color: var(--void); color: var(--washi); }
+
+   There is deliberately no `.void` utility any more. It existed when ink was
+   the page and black was an opt-in stage; now that the relationship is
+   reversed, a class that paints a section black is a no-op on top of a black
+   page, and the honest way to raise something off the void is a panel
+   (`--sumi-2`), not a background swap. See decisions.md. */
+.ink {
+  background-color: var(--sumi);
+}
+
+.panel {
+  background-color: var(--sumi-2);
 }
 
 /* — Reusable entrance motion (the "Air" behavior — fade + rise) — */

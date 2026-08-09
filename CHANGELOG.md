@@ -2,7 +2,43 @@
 
 Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
-## v0.5.2 — current
+## v0.6 — current
+
+**The page is void; content lives on ink panels.** Reverses v0.5's "pure black
+is a stage, not a background" after seeing it shipped. Panels separate from
+the page at 1.19:1 on void versus 1.04:1 on ink — on ink they had been very
+nearly invisible.
+
+The neutrals are now a three-tier elevation scale rather than a page colour
+plus a panel colour:
+
+| Tier | Token | What sits here |
+|---|---|---|
+| Page | `--void` | the stage |
+| Recessed | `--sumi` | inputs, wells, insets |
+| Raised | `--sumi-2` | cards, modals, content |
+
+**Breaking**
+- The `.void` utility is **removed** — a class that paints a section black on
+  a black page is a no-op. `.ink` and `.panel` replace it for deliberately
+  recessing or raising a region.
+- `--line` / `--line-strong` default to **0.14 / 0.24** (were 0.09 / 0.18).
+  The old values were tuned for an ink page and dissolve against black.
+- `Card` and `CenteredForm` are **solid** `--sumi-2` — no opacity tint, no
+  `backdrop-blur` (there was nothing behind it to blur).
+- `Input` moved to `--sumi`, since it sits on a panel and matching the panel
+  flattened it.
+- `DashboardShell` / `CenteredForm` page backgrounds moved to `--void`.
+
+**Also**
+- Water's "glassmorphism" is documented as the hover morph (lift + pooling
+  glow), not the glass tint — the behaviour survives, the implementation
+  doesn't.
+- Contrast check now measures every `-text` tint against all three tiers.
+- Fixed: the showcase was setting `-webkit-font-smoothing: antialiased`,
+  which `decisions.md` explicitly forbids.
+
+## v0.5.2
 
 **Corrects v0.5.1, which did not actually work.** Tailwind does *not* merge a
 preset's `content` — a project's own array replaces it outright (verified with

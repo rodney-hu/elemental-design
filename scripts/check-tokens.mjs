@@ -252,9 +252,13 @@ function stripComments(src) {
     return m ? [+m[1], +m[2], +m[3]] : null;
   };
 
+  /* All three elevation tiers. Text sits on panels most of the time, on the
+     void for short passages, and on sumi inside inputs and wells — a tint
+     that clears AA on one of them is not automatically safe on the others. */
   const backdrops = [
-    ["--sumi", triplet("sumi")],
     ["--void", triplet("void")],
+    ["--sumi", triplet("sumi")],
+    ["--sumi-2", triplet("sumi-2")],
   ];
 
   for (const m of tokensCss.matchAll(/--([\w-]+)-text-rgb:\s*(\d+)\s+(\d+)\s+(\d+)/g)) {

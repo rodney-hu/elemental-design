@@ -42,7 +42,50 @@ the consumer's build where its source is** — nothing else in the toolchain
 notices that it didn't. And **a config fix isn't verified until you diff the
 output**: an unchanged build artifact is evidence, not a coincidence.
 
-**Pure black is a stage, not a background.**
+**Void is the page. Content lives on ink panels.** *(supersedes "Pure black is
+a stage, not a background", below.)*
+The earlier call was made on reasoning; this one was made after looking at it.
+Once the Fourfold shipped on a real void section, the verdict was immediate:
+black reads better as the page, and panels raised off it are both easier to
+read and more present as objects. The numbers agreed — a card separates from
+its background at **1.09:1 on void** versus **1.04:1 on ink**, and going solid
+takes it to **1.19:1**. On ink, panels had been very nearly invisible.
+
+So the relationship is reversed, and the neutrals become a real elevation
+scale rather than a page colour plus a panel colour:
+
+| Tier | Token | Role |
+|---|---|---|
+| Page | `--void` | the stage; nothing else sits here |
+| Recessed | `--sumi` | inputs, wells, code blocks |
+| Raised | `--sumi-2` | cards, modals, anything holding content |
+
+Consequences that had to move with it:
+
+- **Hairlines default to 0.14 / 0.24**, up from 0.09 / 0.18. Those were tuned
+  when the page was ink; against black a 0.09 border dissolves and a card
+  loses its edge.
+- **Cards are solid, not translucent.** `bg-sumi-2/60` composited to
+  `rgb(16 14 13)` on black — barely a surface. The `backdrop-blur` went with
+  it: on a flat page there was nothing behind it to blur, so it was pure cost.
+- **The `.void` utility is gone.** It existed to opt *into* black; a class that
+  paints a section black on top of a black page is a no-op. `.ink` and
+  `.panel` replace it for the rarer case of deliberately raising or recessing
+  a region.
+- **Water's "glassmorphism" is now the hover morph, not the glass tint** — the
+  lift and the pooling glow. `philosophy.md` updated; the behaviour survives,
+  the implementation of it doesn't.
+- The contrast check now measures every `-text` tint against **all three**
+  tiers, not just ink and void.
+
+The one thing kept from the old rule: **long prose still belongs on a panel,
+not directly on the void.** Short passages on black are fine and look good;
+sustained reading on pure black is not, and that half of the original argument
+was right.
+
+**Pure black is a stage, not a background.** *(superseded — see above. Kept
+because the reasoning is still sound for the half that survived: sustained
+reading belongs on a panel, not on raw black.)*
 The reference material that prompted v0.5 is all on `#000000`, and the
 temptation was to move `--sumi` there. Rejected: ink/paper is the metaphor
 the whole system is built on, and long reading passages on true black are
