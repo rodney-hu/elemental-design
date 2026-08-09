@@ -20,7 +20,14 @@
  * above. Rule names are the `rule` field on each finding.
  */
 
-import { readPkg, stripComments, collectAllowances, lineAt } from "./source.mjs";
+import {
+  readPkg,
+  stripComments,
+  collectAllowances,
+  lineAt,
+  classRanges,
+  inRanges,
+} from "./source.mjs";
 
 /* ------------------------- Facts read from the package ------------------------ */
 
@@ -207,9 +214,21 @@ const rules = [
   {
     name: "second-easing",
     doc: "One easing curve for the whole system. A second one reached production undetected as ease:'easeInOut' (decisions.md).",
-    test({ src, add }) {
+    test({ src, add, classes }) {
+      /* `ease-out` and `ease-in` are also ordinary English, so these are
+         checked only where a class can actually live — otherwise the rule
+         fires on the sentence "a single ease-out and three durations", and a
+         linter that flags your prose gets switched off. */
+      for (const m of src.matchAll(/\bease-(?:in-out|in|out|linear)\b/g)) {
+        if (!inRanges(classes, m.index)) continue;
+        add(
+          m.index,
+          `"${m[0]}" introduces a second easing curve — use ease-air, or import { easeAir } from "elemental-design/motion"`,
+        );
+      }
+      /* The JS form can't collide with prose, so it scans everything. */
       for (const m of src.matchAll(
-        /\bease-(?:in|out|in-out|linear)\b|\bease:\s*["'](?:easeIn|easeOut|easeInOut|linear|anticipate|backOut)["']/g,
+        /\bease:\s*["'](?:easeIn|easeOut|easeInOut|linear|anticipate|backOut)["']/g,
       )) {
         add(
           m.index,
@@ -375,11 +394,13 @@ export const usageRuleNames = rules.map((r) => r.name);
 export function runUsageRules(rawSrc, file, report) {
   const allowed = collectAllowances(rawSrc);
   const src = stripComments(rawSrc);
+  const classes = classRanges(src);
 
   for (const rule of rules) {
     rule.test({
       src,
       file,
+      classes,
       add(index, message) {
         const line = lineAt(src, index);
         if (allowed.get(line)?.has(rule.name)) return;

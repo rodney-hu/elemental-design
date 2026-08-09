@@ -133,6 +133,55 @@ export function Section({
   );
 }
 
+/* ---------------------------------- Divider --------------------------------- */
+/* The gradient hairline between sections.
+ *
+ * Evenly-spaced sections on a flat black page read as separate slabs rather
+ * than a sequence — generous spacing alone gives the eye no cue that one
+ * thing ended and another began. This is the cue, and it is deliberately the
+ * quietest one that works: a rule that fades to nothing at both edges, at the
+ * same --line-strong value used for every other hairline. A divider brighter
+ * than a card border would outrank the content it separates.
+ *
+ * Renders <hr>, so it is a real thematic break in the markup, and carries
+ * `aria-hidden` because the heading that follows already announces the new
+ * section — a screen reader gains nothing from "horizontal rule" between
+ * every one.
+ */
+
+export interface DividerProps extends React.HTMLAttributes<HTMLHRElement> {
+  /** "fire" tints the centre. Use sparingly — it is an accent, and one accent leads. */
+  tone?: "neutral" | "fire";
+  /** Vertical breathing room around the rule. */
+  space?: "none" | "md" | "lg";
+}
+
+const dividerSpace: Record<NonNullable<DividerProps["space"]>, string> = {
+  none: "",
+  md: "my-xl",
+  lg: "my-2xl",
+};
+
+export function Divider({
+  tone = "neutral",
+  space = "none",
+  className,
+  ...props
+}: DividerProps) {
+  return (
+    <hr
+      aria-hidden="true"
+      className={cx(
+        "divider",
+        tone === "fire" && "divider-fire",
+        dividerSpace[space],
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
 /* ----------------------------------- Stack ---------------------------------- */
 /* Flex, with the gap coming from the space scale by name. The point is that
    `gap` cannot be an arbitrary number. */

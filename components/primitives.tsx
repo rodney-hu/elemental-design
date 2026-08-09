@@ -92,7 +92,26 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
    * real components now.
    */
   elevation?: "raised" | "rooted" | "none";
+  /**
+   * A light fall across the panel's surface, capped at 0.04 alpha and dying
+   * above the midpoint so long content never sits on a gradient. See the
+   * four-tier glow namespace in tokens.css (aura / halo / sheen / edge).
+   */
+  sheen?: boolean;
+  /**
+   * A gradient border lit from the top-left corner, in an element's colour.
+   * Brighter than a sheen is allowed to be, because it is a 1px line rather
+   * than a reading surface. Defaults to the card's `accent`.
+   */
+  edge?: CardAccent | false;
 }
+
+const cardEdge: Record<CardAccent, string> = {
+  fire: "edge edge-fire",
+  water: "edge edge-water",
+  earth: "edge edge-earth",
+  air: "edge edge-air",
+};
 
 const cardElevation: Record<
   NonNullable<CardProps["elevation"]>,
@@ -142,6 +161,8 @@ export function Card({
   interactive = false,
   accent = "water",
   elevation = "raised",
+  sheen = false,
+  edge = false,
   className,
   ...props
 }: CardProps) {
@@ -150,6 +171,8 @@ export function Card({
       className={cx(
         CARD_BASE,
         cardElevation[elevation],
+        sheen && "sheen",
+        edge && cardEdge[edge],
         interactive && cardMorph(accent),
         className,
       )}

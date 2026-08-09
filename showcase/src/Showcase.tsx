@@ -45,11 +45,49 @@ import {
   TableHeaderCell,
   TableCell,
 } from "elemental-design/table";
-import { Container, Section, Stack, Grid } from "elemental-design/structure";
+import {
+  Container,
+  Section,
+  Stack,
+  Grid,
+  Divider,
+} from "elemental-design/structure";
+import { Reveal } from "elemental-design/reveal";
 import { ElementMark, type Element } from "elemental-design/marks";
 import { Fourfold } from "elemental-design/shells";
+import { MotionLab } from "./MotionLab";
 
 const ELEMENTS: Element[] = ["fire", "water", "earth", "air"];
+
+/* A section, plus the two things that give the page flow:
+ *
+ *   · a gradient hairline above it, so the eye is told one thing ended and
+ *     another began. Generous spacing alone didn't do that — evenly-spaced
+ *     sections on a flat black page read as separate slabs, not a sequence.
+ *   · a scroll-triggered entrance, so a section arrives rather than simply
+ *     being there.
+ *
+ * `first` suppresses the divider on the hero, which has nothing above it to
+ * be separated from.
+ *
+ * Local to the showcase: the design system ships `Divider`, `Reveal` and
+ * `Section` as separate pieces on purpose, because a project might well want
+ * one without the others. This is just how THIS page composes them.
+ */
+function Chapter({
+  first = false,
+  children,
+  ...section
+}: React.ComponentProps<typeof Section> & { first?: boolean }) {
+  return (
+    <>
+      {!first && <Divider />}
+      <Reveal>
+        <Section {...section}>{children}</Section>
+      </Reveal>
+    </>
+  );
+}
 
 /* A labelled specimen block. Local to the showcase — this is presentation of
    the system, not part of it. */
@@ -95,7 +133,7 @@ export function Showcase() {
   return (
     <main>
       {/* ------------------------------- Hero ------------------------------- */}
-      <Section rhythm="loose" aura="strong">
+      <Chapter first rhythm="loose" aura="strong">
         <Container size="md">
           <Stack gap="lg" className="rise">
             <Eyebrow tone="fire">元素 · Genso</Eyebrow>
@@ -117,10 +155,10 @@ export function Showcase() {
             </Stack>
           </Stack>
         </Container>
-      </Section>
+      </Chapter>
 
       {/* ----------------------------- Elements ----------------------------- */}
-      <Section>
+      <Chapter>
         <Container size="lg">
           <Stack gap="xl">
             <Stack gap="sm">
@@ -164,11 +202,11 @@ export function Showcase() {
             </Specimen>
           </Stack>
         </Container>
-      </Section>
+      </Chapter>
 
       {/* ----------------------------- Fourfold ----------------------------- */}
       {/* At most one per page, never in the same viewport as a primary CTA. */}
-      <Section aura="r">
+      <Chapter aura="r">
         <Container size="lg">
           <Stack gap="xl">
             <Stack gap="sm">
@@ -223,10 +261,10 @@ export function Showcase() {
             />
           </Stack>
         </Container>
-      </Section>
+      </Chapter>
 
       {/* ---------------------------- Typography ---------------------------- */}
-      <Section>
+      <Chapter>
         <Container size="lg">
           <Stack gap="xl">
             <Stack gap="sm">
@@ -277,10 +315,10 @@ export function Showcase() {
             </Specimen>
           </Stack>
         </Container>
-      </Section>
+      </Chapter>
 
       {/* ------------------------------ Surfaces ---------------------------- */}
-      <Section aura="l">
+      <Chapter aura="l">
         <Container size="lg">
           <Stack gap="xl">
             <Stack gap="sm">
@@ -354,10 +392,10 @@ export function Showcase() {
             </Specimen>
           </Stack>
         </Container>
-      </Section>
+      </Chapter>
 
       {/* ------------------------------- Forms ------------------------------ */}
-      <Section>
+      <Chapter>
         <Container size="md">
           <Stack gap="xl">
             <Stack gap="sm">
@@ -432,10 +470,10 @@ export function Showcase() {
             </Card>
           </Stack>
         </Container>
-      </Section>
+      </Chapter>
 
       {/* ------------------------------ Status ------------------------------ */}
-      <Section aura="r">
+      <Chapter aura="r">
         <Container size="lg">
           <Stack gap="xl">
             <Stack gap="sm">
@@ -466,10 +504,10 @@ export function Showcase() {
             </Specimen>
           </Stack>
         </Container>
-      </Section>
+      </Chapter>
 
       {/* ------------------------- Overlays and structure ------------------------ */}
-      <Section>
+      <Chapter>
         <Container size="lg">
           <Stack gap="xl">
             <Stack gap="sm">
@@ -575,7 +613,7 @@ export function Showcase() {
             </Specimen>
           </Stack>
         </Container>
-      </Section>
+      </Chapter>
 
       <Modal
         open={modalOpen}
@@ -605,8 +643,29 @@ export function Showcase() {
         </Stack>
       </Modal>
 
+      {/* ---------------------------- Motion lab ---------------------------- */}
+      <Chapter aura="l">
+        <Container size="lg">
+          <Stack gap="xl">
+            <Stack gap="sm">
+              <Eyebrow>Motion</Eyebrow>
+              <Heading level={2}>One curve, three durations</Heading>
+              <Text size="sm" tone="muted" className="max-w-measure">
+                The whole motion language is a single ease-out and three
+                durations, and every entrance is decorative — so all of it is
+                gated on <code className="font-mono">prefers-reduced-motion</code>{" "}
+                at the token level. Everything below plays on click rather than
+                autoplaying, so scrolling past here stays quiet.
+              </Text>
+            </Stack>
+
+            <MotionLab />
+          </Stack>
+        </Container>
+      </Chapter>
+
       {/* ------------------------------ Footer ------------------------------ */}
-      <Section id="checks" rhythm="loose">
+      <Chapter id="checks" rhythm="loose">
         <Container size="md">
           <Stack gap="md">
             <Eyebrow>Checks</Eyebrow>
@@ -628,7 +687,7 @@ export function Showcase() {
             </Prose>
           </Stack>
         </Container>
-      </Section>
+      </Chapter>
     </main>
   );
 }

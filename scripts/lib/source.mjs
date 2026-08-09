@@ -109,6 +109,60 @@ export function collectAllowances(rawSrc) {
   return allowed;
 }
 
+/**
+ * Character ranges that are class-attribute values — `class="…"`,
+ * `className="…"`, `className={cx("…", "…")}` and template literals.
+ *
+ * Some Tailwind utilities are also ordinary English. `ease-out` is the one
+ * that bites: a rule matching it anywhere fires on the sentence "a single
+ * ease-out and three durations", and a linter that flags your prose is a
+ * linter that gets switched off. Rules for utilities whose names collide with
+ * normal writing check membership in these ranges instead of scanning raw
+ * source.
+ *
+ * Utilities that can't collide (`duration-300`, `rounded-xl`, `text-[13px]`)
+ * don't need this and keep scanning everything, so a value in a style object
+ * or a stylesheet is still caught.
+ */
+export function classRanges(src) {
+  const ranges = [];
+
+  /* The attribute, then everything up to the balanced end of its value. Both
+     the plain "…" form and the {…} expression form, which may contain several
+     strings (cx("a", "b")) — taking the whole expression is close enough,
+     since anything inside it is class-ish by construction. */
+  for (const m of src.matchAll(/\bclass(?:Name)?=(?:"([^"]*)"|'([^']*)'|\{)/g)) {
+    const start = m.index + m[0].length;
+    if (m[1] !== undefined || m[2] !== undefined) {
+      ranges.push([start - (m[1] ?? m[2]).length - 1, start]);
+      continue;
+    }
+    /* Brace form: walk to the matching close brace. */
+    let depth = 1;
+    let i = start;
+    while (i < src.length && depth > 0) {
+      if (src[i] === "{") depth++;
+      else if (src[i] === "}") depth--;
+      i++;
+    }
+    ranges.push([start, i]);
+  }
+
+  /* A CSS transition/animation shorthand is equally a real usage. */
+  for (const m of src.matchAll(
+    /(?:transition|animation)(?:-timing-function)?\s*:[^;\n}]*/g,
+  )) {
+    ranges.push([m.index, m.index + m[0].length]);
+  }
+
+  return ranges;
+}
+
+/** True when `index` falls inside any range from `classRanges`. */
+export function inRanges(ranges, index) {
+  return ranges.some(([a, b]) => index >= a && index < b);
+}
+
 /** Line number (1-indexed) for a character offset. */
 export function lineAt(src, index) {
   let line = 1;

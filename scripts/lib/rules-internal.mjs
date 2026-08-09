@@ -171,9 +171,16 @@ export function runInternalRules(report) {
     }
   }
 
-  /* ---- 5. Alpha caps for aura and halo ---------------------------------- */
-  /* The caps lived only in prose. An aura tints a background (≤0.055, 0.085 on
-     a hero); a halo is bound to an object (≤0.30, air ≤0.24). */
+  /* ---- 5. Alpha caps across the whole glow namespace --------------------- */
+  /* Four tiers, each with a budget set by how much of the user's field of
+     view it covers:
+       aura   tints a BACKGROUND          ≤ 0.055 (0.085 hero)
+       halo   sits BEHIND an object       ≤ 0.30  (air 0.24)
+       sheen  lies ON a surface           ≤ 0.05
+       edge   lies ON a 1px border        ≤ 0.55  (air 0.45)
+     Without a numeric guard these are prose, and prose is how "just a subtle
+     gradient" reintroduces the banned full-page wash one component at a
+     time. */
   {
     const caps = { "aura-fire": 0.055, "aura-fire-strong": 0.085 };
     for (const el of ["fire", "water", "earth"]) caps[`halo-${el}`] = 0.3;
@@ -191,6 +198,40 @@ export function runInternalRules(report) {
         fail(
           "alpha-cap",
           `--${name} is ${m[1]}, above its documented cap of ${cap}`,
+        );
+      }
+    }
+
+    /* Gradient tokens carry several stops, so the cap applies to the
+       BRIGHTEST one rather than to a single value. */
+    const gradientCaps = {
+      sheen: 0.05,
+      "edge-fire": 0.55,
+      "edge-water": 0.55,
+      "edge-earth": 0.55,
+      "edge-air": 0.45,
+      "divider-fire": 0.2,
+    };
+
+    for (const [name, cap] of Object.entries(gradientCaps)) {
+      /* Capture the whole gradient value: everything up to the closing paren
+         of the linear-gradient(...), across the newlines prettier inserts. */
+      const m = tokensCss.match(
+        new RegExp(`--${name}:\\s*linear-gradient\\(([\\s\\S]*?)\\);`),
+      );
+      if (!m) {
+        fail("alpha-cap", `tokens.css does not define --${name}`);
+        continue;
+      }
+      const alphas = [...m[1].matchAll(/\/\s*([\d.]+)\s*\)/g)].map((a) =>
+        parseFloat(a[1]),
+      );
+      if (!alphas.length) continue; // no alpha stops (e.g. a var()-only gradient)
+      const peak = Math.max(...alphas);
+      if (peak > cap) {
+        fail(
+          "alpha-cap",
+          `--${name} peaks at ${peak}, above its documented cap of ${cap}`,
         );
       }
     }

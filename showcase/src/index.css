@@ -19,3 +19,166 @@ body {
   color: var(--washi);
   font-family: var(--font-body);
 }
+
+/* ---------------------------------------------------------------------------
+   Motion-lab demo keyframes.
+   Showcase-local on purpose: these exist to DEMONSTRATE the system's motion
+   language, not to extend it. Every one uses --ease-air and one of the three
+   sanctioned durations, so the demos can't drift from what they document.
+   Putting them in tokens.css would ship four animations no project needs.
+   --------------------------------------------------------------------------- */
+
+/* The duration race — same distance for all three bars.
+   Animates `left` rather than `translateX`: the travel distance depends on
+   the track's own width, and a percentage `left` resolves against exactly
+   that, whereas a percentage translate resolves against the DOT's width.
+   Cheap either way at this size, and it removes the need to make each track
+   a container just to read its width. */
+@keyframes raceAcross {
+  from {
+    left: 0.25rem;
+  }
+  to {
+    left: calc(100% - 1.75rem);
+  }
+}
+
+/* 火 FIRE — the strike. Fast, committed, then it glows. */
+@keyframes demoFire {
+  0% {
+    transform: translateX(0) scale(1);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  35% {
+    transform: translateX(6px) scale(1.15);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    filter: drop-shadow(0 0 10px var(--fire-glow-bold));
+  }
+}
+
+/* 水 WATER — lifts and pools light. Never a hard state switch. */
+@keyframes demoWater {
+  0% {
+    transform: translateY(0);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    transform: translateY(-6px);
+    filter: drop-shadow(0 6px 14px var(--water-glow));
+  }
+  100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 2px 6px var(--water-glow));
+  }
+}
+
+/* 土 EARTH — settles down into its own weight. The only one that ends lower
+   than it started, because earth is the stance you strike from. */
+@keyframes demoEarth {
+  0% {
+    transform: translateY(-8px);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 10px 16px var(--earth-glow));
+  }
+}
+
+/* 風 AIR — fade and rise. The system's own entrance, on a mark. */
+@keyframes demoAir {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.demo-fire {
+  display: inline-block;
+  animation: demoFire var(--duration-default) var(--ease-air) forwards;
+}
+.demo-water {
+  display: inline-block;
+  animation: demoWater var(--duration-slow) var(--ease-air) forwards;
+}
+.demo-earth {
+  display: inline-block;
+  animation: demoEarth var(--duration-slow) var(--ease-air) forwards;
+}
+.demo-air {
+  display: inline-block;
+  animation: demoAir var(--duration-slow) var(--ease-air) forwards;
+}
+
+/* ---------------------------------------------------------------------------
+   Motion preview — a scoped, opt-in escape from the reduced-motion guard.
+
+   tokens.css zeroes every animation under `prefers-reduced-motion: reduce`,
+   which is correct: in a real product every entrance in this system is
+   decorative, and decoration is exactly what that setting asks you to drop.
+
+   This page is the one place that isn't true. Here the motion IS the content
+   — a style guide that cannot show you its own easing curve to a reader with
+   reduce-motion on has failed at its only job. So the demos get an opt-out,
+   under conditions that keep it honest:
+
+     · off by default, even here — reduce-motion still wins on arrival
+     · enabled only by an explicit click on a labelled control
+     · scoped to `.motion-preview`, so it can never leak to the rest of the
+       page, let alone to a consuming project
+     · the demos themselves are already click-to-play, so nothing moves until
+       the reader asks for it twice
+
+   This override lives in the SHOWCASE, not in tokens.css, on purpose. The
+   system should not ship a mechanism for opting out of an accessibility
+   setting; this page has an unusual requirement and carries its own cost.
+
+   Each rule restates the full `animation` shorthand: the global guard sets
+   `animation-duration: 0.01ms !important` from a `*` selector, and an
+   `!important` shorthand at higher specificity is what beats it.
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .motion-preview .demo-fire {
+    animation: demoFire var(--duration-default) var(--ease-air) forwards !important;
+  }
+  .motion-preview .demo-water {
+    animation: demoWater var(--duration-slow) var(--ease-air) forwards !important;
+  }
+  .motion-preview .demo-earth {
+    animation: demoEarth var(--duration-slow) var(--ease-air) forwards !important;
+  }
+  .motion-preview .demo-air {
+    animation: demoAir var(--duration-slow) var(--ease-air) forwards !important;
+  }
+
+  .motion-preview .rise {
+    opacity: 0;
+    animation: riseIn var(--duration-slow) var(--ease-air) forwards !important;
+  }
+  .motion-preview .rise-d1 {
+    animation-delay: 0.05s !important;
+  }
+  .motion-preview .rise-d2 {
+    animation-delay: 0.18s !important;
+  }
+  .motion-preview .rise-d3 {
+    animation-delay: 0.3s !important;
+  }
+  .motion-preview .rise-d4 {
+    animation-delay: 0.42s !important;
+  }
+
+  /* The race bars each run at a different duration, so the value arrives as
+     a custom property on the element (`--race-ms`) and is read back here.
+     Restating a literal would mean three near-identical rules that could
+     drift from the durationMs constants driving the demo. */
+  .motion-preview .race-dot {
+    animation-duration: var(--race-ms) !important;
+  }
+}

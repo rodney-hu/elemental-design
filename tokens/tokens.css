@@ -254,6 +254,89 @@
   ); /* capped below the others, per the --air-glow precedent —
                               gold at full strength reads garish fast */
   --halo-size: 12rem;
+
+  /* — Surface effects — the third tier of the glow namespace —
+     aura / halo already split "tints a background" from "sits behind an
+     object". Both are things that happen AROUND something. These two are
+     things that happen ON something, and they get their own names and caps
+     for the same reason halo did: without a named budget, "a subtle gradient
+     on a card" is how full-page glow comes back one component at a time.
+
+       aura   tints a BACKGROUND            ≤ 0.055
+       halo   sits BEHIND an object         ≤ 0.30
+       sheen  lies ON an object's SURFACE   ≤ 0.05   ← new
+       edge   lies ON an object's BORDER    ≤ 0.55   ← new
+
+     Why sheen is capped so much lower than edge: a sheen covers the whole
+     panel, so it competes with the content sitting on it, and v0.6 decided
+     panels are solid — a visible gradient re-opens the translucency question
+     that decision closed. An edge is a 1px line touching nothing, so it can
+     be bright for the same reason a halo can: it is emphasis on a boundary,
+     not decoration across a reading surface.
+
+     All static. Animating either one turns a surface treatment into an
+     attention-getter, which is the glow rule ("emphasis, not decoration")
+     failing in slow motion. */
+
+  /* Sheen — a top-down light fall across a panel. The stop at 45% matters:
+     it dies well above the midpoint, so the bottom half of a card is true
+     --sumi-2 and long content never sits on a gradient. */
+  --sheen: linear-gradient(
+    180deg,
+    rgb(var(--washi-rgb) / 0.04) 0%,
+    transparent 45%
+  );
+
+  /* Edge — a gradient border. Runs corner to corner and dies at 55%, so the
+     lit corner reads as a light source rather than the whole outline reading
+     as a coloured border (which would just be `border-color` with extra
+     steps). */
+  --edge-fire: linear-gradient(
+    135deg,
+    rgb(var(--fire-rgb) / 0.55) 0%,
+    rgb(var(--fire-rgb) / 0.08) 55%,
+    transparent 100%
+  );
+  --edge-water: linear-gradient(
+    135deg,
+    rgb(var(--water-rgb) / 0.55) 0%,
+    rgb(var(--water-rgb) / 0.08) 55%,
+    transparent 100%
+  );
+  --edge-earth: linear-gradient(
+    135deg,
+    rgb(var(--earth-rgb) / 0.55) 0%,
+    rgb(var(--earth-rgb) / 0.08) 55%,
+    transparent 100%
+  );
+  --edge-air: linear-gradient(
+    135deg,
+    rgb(var(--air-rgb) / 0.45) 0%,
+    rgb(var(--air-rgb) / 0.08) 55%,
+    transparent 100%
+  ); /* capped below the others, per the --air-glow / --halo-air precedent */
+
+  /* — Divider — the gradient hairline between sections —
+     A full-bleed rule that fades to nothing at both edges. It exists because
+     evenly-spaced sections on a flat black page read as separate slabs rather
+     than a sequence: there is nothing to mark a transition, so the eye has no
+     cue that one thing ended and another began.
+
+     Fades rather than terminating, because a hard-ended rule draws attention
+     to where it stops. --line-strong at the centre is deliberately the same
+     hairline value used everywhere else — a divider that is brighter than a
+     card border would outrank the content it separates. */
+  --divider: linear-gradient(90deg, transparent 0%, var(--line-strong) 50%, transparent 100%);
+  --divider-fire: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--fire-rgb) / 0.2) 50%,
+    transparent 100%
+  );
+
+  /* — Scroll reveal — how far an element travels as it enters view.
+     Same 10px as the `.rise` keyframe, named so both halves stay in step. */
+  --reveal-distance: 10px;
 }
 
 /* — Page surface —
@@ -430,6 +513,102 @@
   );
 }
 
+/* — Surface effects — sheen and edge —
+   Both sit ON an object, unlike .aura (background) and .halo (behind). See
+   the token block for the four-way namespace and why each cap is what it is.
+
+   .sheen is a plain background layer, so it composites over the panel's own
+   --sumi-2 without replacing it. */
+.sheen {
+  background-image: var(--sheen);
+}
+
+/* .edge draws a gradient BORDER. The two-gradient / two-clip trick is the
+   only way to get one without a wrapper element: the element's own
+   background is painted to the padding box, the gradient to the border box,
+   and `mask-composite: exclude` punches the middle out so only the border
+   ring remains. `border-color: transparent` lets the gradient show through.
+
+   `background-origin: border-box` is required — without it the gradient is
+   laid out against the padding box and the corners come out wrong. */
+.edge {
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.edge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.edge-fire::after {
+  background: var(--edge-fire);
+}
+
+.edge-water::after {
+  background: var(--edge-water);
+}
+
+.edge-earth::after {
+  background: var(--edge-earth);
+}
+
+.edge-air::after {
+  background: var(--edge-air);
+}
+
+/* — Divider — the gradient hairline between sections —
+   A 1px block rather than a border, so the gradient has somewhere to live.
+   `aria-hidden` belongs on the element itself: it separates content visually
+   and carries no meaning a screen reader needs (the heading that follows
+   already announces the new section). */
+.divider {
+  block-size: 1px;
+  inline-size: 100%;
+  border: 0;
+  margin: 0;
+  background-image: var(--divider);
+}
+
+.divider-fire {
+  background-image: var(--divider-fire);
+}
+
+/* — Scroll reveal —
+   The JS twin of `.rise`, for entrances that should fire when an element
+   enters view rather than on load. The `Reveal` component in
+   motion/reveal.tsx adds `.reveal-in` via IntersectionObserver.
+
+   Deliberately NOT `animation`: a transition from a resting state means an
+   element that never enters view simply stays put, and there is no keyframe
+   to re-run if it re-enters. */
+.reveal {
+  opacity: 0;
+  transform: translateY(var(--reveal-distance));
+  transition:
+    opacity var(--duration-slow) var(--ease-air),
+    transform var(--duration-slow) var(--ease-air);
+  will-change: opacity, transform;
+}
+
+.reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
 /* — Respect reduced-motion —
    Every entrance in this system is decorative. If the OS asks for reduced
    motion, land elements in their final state instead of animating them. */
@@ -437,6 +616,17 @@
   .rise {
     opacity: 1;
     animation: none;
+  }
+
+  /* Reveal must land in its FINAL state, not its initial one. Zeroing the
+     transition alone would leave `.reveal` stuck at opacity 0 for anything
+     the observer hasn't reached yet — the content would be invisible, not
+     merely unanimated. This is the same class of mistake as the showcase
+     that animated regardless of the setting (docs/decisions.md), inverted. */
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 
   *,
