@@ -32,18 +32,21 @@ npm install "file:../elemental-design"   # sibling folder; swap for the git URL 
 
 ```js
 // tailwind.config.js
+const genso = require("elemental-design/tailwind");
+
 module.exports = {
-  presets: [require("elemental-design/tailwind")],
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  presets: [genso],
+  content: [...genso.content, "./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: { extend: { /* project-only additions go here */ } },
 };
 ```
 
-List only your own source in `content`. The preset already contributes this
-package's component files, and Tailwind merges the two arrays — that part is
-not something you need to remember. It matters: without it, any class used
-only inside these components (`font-kanji`, `bg-earth-soft`,
-`shadow-glow-earth`, …) is never generated and silently renders as nothing.
+**Spreading `genso.content` is required, not optional.** Tailwind does *not*
+merge a preset's `content` — your array replaces it outright. Leave it out and
+every class used only inside these components (`font-kanji`, `bg-earth-soft`,
+`shadow-glow-earth`, …) is never generated and silently renders as nothing:
+kanji falls back to the body font, element badges lose their fill, cards lose
+their glow. Nothing errors. See `docs/decisions.md`.
 
 **2. CSS — import fonts and tokens above your Tailwind directives:**
 

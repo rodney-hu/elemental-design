@@ -19,15 +19,28 @@ consuming project happened to use the same class in its own source.
 This is the same failure mode as the original opacity-modifier bug — a class
 that reads correctly in the component and resolves to nothing in the browser —
 and the README was actively teaching it, by showing a `content` array with
-only the project's own files. Fixed at the source rather than in the docs: the
-preset now contributes absolute globs (via `__dirname`, so they resolve
-wherever the package is installed) for `components/` and `layout/`, and
-Tailwind merges those with the consumer's array. A project cannot forget it
-now. `npm run check` fails if the preset ever stops declaring them.
+only the project's own files.
 
-The general lesson, worth keeping: **a design system distributed as source
-must tell the consumer's build where its source is.** Nothing else in the
-toolchain will notice that it didn't.
+The first attempt at a fix was wrong, and the wrong version is worth recording
+because it is the intuitive one: **Tailwind does not merge a preset's
+`content`.** Declaring globs in the preset and expecting them to combine with
+the project's array does nothing — the project's array replaces the preset's
+outright. Verified with `resolveConfig` on 3.4.19: with a project `content`
+present, only the project's files survive; the preset's apply *only* if the
+project omits `content` entirely, which no real project does. The build stayed
+byte-identical, which is what gave it away.
+
+What actually works: the preset still declares its own absolute globs (via
+`__dirname`, so they resolve wherever the package is installed), but as
+something the consumer **spreads in** —
+`content: [...genso.content, "./src/**/*.{ts,tsx}"]`. `npm run check` fails if
+the preset ever stops exporting them, though it cannot verify a given consumer
+spreads them; the README carries that.
+
+Two lessons worth keeping. **A design system distributed as source must tell
+the consumer's build where its source is** — nothing else in the toolchain
+notices that it didn't. And **a config fix isn't verified until you diff the
+output**: an unchanged build artifact is evidence, not a coincidence.
 
 **Pure black is a stage, not a background.**
 The reference material that prompted v0.5 is all on `#000000`, and the

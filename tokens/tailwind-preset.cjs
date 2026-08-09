@@ -16,17 +16,21 @@
  * reusable HERE, so every project gets it.
  *
  * `content` below covers THIS PACKAGE'S OWN component files, and nothing else.
- * Consumers still list their own source; Tailwind merges the two arrays.
  *
- * This is not optional politeness — without it, every utility class that
- * appears only inside these components (font-kanji, bg-earth-soft,
- * shadow-glow-earth, …) is never generated in the consumer's stylesheet and
- * silently resolves to nothing. That is the same failure mode as the original
- * opacity-modifier bug: the component looks right in source and renders wrong.
- * Declaring it here means a project cannot forget it.
+ * ⚠️ You MUST spread it into your own array — Tailwind does NOT merge a
+ * preset's content. A project's own `content` replaces the preset's outright
+ * (verified with resolveConfig on 3.4.19; the preset's array applies only if
+ * the project omits `content` entirely, which no real project does):
  *
- * The path is absolute, derived from __dirname, so it resolves wherever the
- * package is installed (node_modules, a workspace, a file: link).
+ *   content: [...genso.content, "./index.html", "./src/ ** / *.{ts,tsx}"]
+ *
+ * Skip that spread and every utility appearing only inside these components
+ * (font-kanji, bg-earth-soft, shadow-glow-earth, …) is never generated and
+ * silently resolves to nothing — the same failure mode as the original
+ * opacity-modifier bug: right in the source, wrong in the browser.
+ *
+ * The paths are absolute, derived from __dirname, so they resolve wherever
+ * the package is installed (node_modules, a workspace, a file: link).
  *
  * Colours read the RGB channel triplets from tokens.css, not the derived hex
  * vars, so opacity modifiers (bg-air/10, border-water/40) resolve correctly.

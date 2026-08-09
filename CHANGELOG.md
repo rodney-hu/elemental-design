@@ -2,18 +2,31 @@
 
 Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
-## v0.5.1 — current
+## v0.5.2 — current
+
+**Corrects v0.5.1, which did not actually work.** Tailwind does *not* merge a
+preset's `content` — a project's own array replaces it outright (verified with
+`resolveConfig` on 3.4.19). v0.5.1 declared globs in the preset and assumed
+they'd combine; the built CSS came out byte-identical, which is what exposed it.
+
+The preset still exports its own absolute globs, but consumers must now
+**spread them in**:
+
+```js
+content: [...genso.content, "./index.html", "./src/**/*.{js,ts,jsx,tsx}"]
+```
+
+README and preset docs updated to teach the working pattern.
+
+## v0.5.1
 
 **Fixed — packaged components were silently losing their styles.**
-The Tailwind preset now declares `content` globs for its own `components/`
-and `layout/` directories (absolute, via `__dirname`), which Tailwind merges
-with the consuming project's array.
-
-Without it, any utility used *only* inside this package was never generated
-downstream: `font-kanji` (so the kanji register rendered in the body font),
+Any utility used *only* inside this package was never generated downstream:
+`font-kanji` (so the kanji register rendered in the body font),
 `bg-earth-soft` (so `Badge tone="earth"` had no background) and
 `shadow-glow-earth` (so `Card accent="earth"` had no glow). The README had
-been teaching the broken configuration. Guarded by a new check.
+been teaching the broken configuration. Added a check that the preset exports
+content globs (it cannot verify a consumer spreads them — that's on the docs).
 
 Caught the first time a packaged component was rendered in a real consumer —
 the argument for actually using this stuff, not just typechecking it.
