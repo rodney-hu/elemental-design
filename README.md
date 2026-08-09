@@ -5,6 +5,11 @@ every project, so no project starts from a blank canvas.
 
 ## Folder map
 
+**New here?** Read `docs/philosophy.md` (what the system believes), then
+`docs/foundations.md` (what to actually do). `docs/decisions.md` is a
+reference, not a read-through — reach for it when you want to change something
+and need to know whether it was already tried.
+
 | Folder | What lives here | When to open it |
 |---|---|---|
 | `docs/` | The *why* — philosophy, operating rules, decision log | Before changing a token, or when you forget why something is the way it is |
@@ -121,6 +126,21 @@ the half that was missing when a single site ended up with three different
 `shadow-glow-fire`, `border-line`) — never a hand-typed hex. If a token is
 missing, add it to `tokens/tokens.css` here, then use it. `npm run check`
 fails the build if a component hand-types a color.
+
+## Versioning
+
+Installs pin a tag (`#v1.0.0`), so nothing moves under a project until you
+change that number. What the numbers mean:
+
+| Bump | Means |
+|---|---|
+| **Major** | A rule changed, not just an addition. Removed or renamed a token, changed a component's default, narrowed a peer range. Always has a **Breaking** section in `CHANGELOG.md` with the migration. |
+| **Minor** | New tokens, new components, new lint rules. Existing code keeps working. |
+| **Patch** | Fixes and docs. No new surface. |
+
+A new `genso-check` rule is a **minor** bump even though it can fail a build
+that used to pass — the rule was always true, it just wasn't enforced. If a
+rule is wrong for your project, `genso-allow` it rather than pinning back.
 
 ## Changing a color
 

@@ -32,6 +32,21 @@ new color variant" questions are already answered there.
   the wiring lives *between* them, which is why it never got done by hand.
 - `Textarea`, `Select`, `Checkbox`, `Radio`, `RadioGroup` (fieldset + legend)
 
+`overlay.tsx`
+- `Modal` — native `<dialog>`, so the focus trap, Escape-to-close and top-layer
+  stacking come from the browser rather than being reimplemented.
+- `ToastProvider` / `useToast` — one `aria-live` region for the stack. Mount
+  the provider once near the app root.
+
+`tabs.tsx`
+- `Tabs` / `TabList` / `Tab` / `TabPanel` — roving tabindex plus arrow, Home
+  and End keys. Without it, every inactive tab becomes a Tab stop, which is
+  the most common bug in hand-rolled tabs.
+
+`table.tsx`
+- `Table` and friends — native `<table>` semantics with a scroll container, so
+  a wide table scrolls inside its own box instead of blowing out the page.
+
 ## Conventions
 
 - One file per logical group, not one file per component — `primitives.tsx`
@@ -46,7 +61,6 @@ new color variant" questions are already answered there.
 
 ## Still to build
 
-- Modal / dialog shell (native `<dialog>`, focus trap, Escape)
-- Toast / notification (semantic-status-driven, `aria-live`)
-- Tabs (roving tabindex + ARIA)
-- Table
+Nothing outstanding. The v0.1 list (modal, toast, tabs, table) shipped in
+v1.0. Add a candidate here when a real project needs it — a component with no
+usage case is a component whose API gets designed against imagination.

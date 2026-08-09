@@ -35,6 +35,16 @@ import {
   Checkbox,
   RadioGroup,
 } from "elemental-design/forms";
+import { Modal, useToast } from "elemental-design/overlay";
+import { Tabs, TabList, Tab, TabPanel } from "elemental-design/tabs";
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeaderCell,
+  TableCell,
+} from "elemental-design/table";
 import { Container, Section, Stack, Grid } from "elemental-design/structure";
 import { ElementMark, type Element } from "elemental-design/marks";
 import { Fourfold } from "elemental-design/shells";
@@ -72,6 +82,8 @@ function Specimen({
 export function Showcase() {
   const [email, setEmail] = React.useState("");
   const [plan, setPlan] = React.useState("air");
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const toast = useToast();
 
   /* Deliberately invalid so the error state is visible without interaction —
      an error state you have to trigger by hand is one nobody ever looks at. */
@@ -455,6 +467,143 @@ export function Showcase() {
           </Stack>
         </Container>
       </Section>
+
+      {/* ------------------------- Overlays and structure ------------------------ */}
+      <Section>
+        <Container size="lg">
+          <Stack gap="xl">
+            <Stack gap="sm">
+              <Eyebrow>Composed</Eyebrow>
+              <Heading level={2}>Overlays, tabs and tables</Heading>
+              <Text size="sm" tone="muted" className="max-w-measure">
+                The four patterns that sat on the "still to build" list since
+                v0.1. Each one leans on a native element, so the browser
+                provides the behaviour that hand-rolled versions reimplement
+                and get wrong.
+              </Text>
+            </Stack>
+
+            <Specimen
+              title="Modal"
+              note="A native <dialog>. Escape closes it, focus is trapped inside, and it renders in the browser's top layer — none of which is our code."
+            >
+              <Stack direction="horizontal" gap="sm" wrap>
+                <Button variant="primary" onClick={() => setModalOpen(true)}>
+                  Open modal
+                </Button>
+              </Stack>
+            </Specimen>
+
+            <Specimen
+              title="Toast"
+              note="One aria-live region for the whole stack. The entrance reuses the system's own .rise utility, so it inherits the reduced-motion guard instead of reimplementing it."
+            >
+              <Stack direction="horizontal" gap="sm" wrap>
+                {(["success", "info", "warning", "error"] as const).map((tone) => (
+                  <Button
+                    key={tone}
+                    variant="secondary"
+                    onClick={() =>
+                      toast.push({
+                        tone,
+                        message: `This is a ${tone} toast.`,
+                      })
+                    }
+                  >
+                    {tone}
+                  </Button>
+                ))}
+              </Stack>
+            </Specimen>
+
+            <Specimen
+              title="Tabs"
+              note="Roving tabindex: only the selected tab is a Tab stop, and arrow keys move between them. Try it from the keyboard."
+            >
+              <Tabs defaultValue="fire">
+                <TabList>
+                  {ELEMENTS.map((el) => (
+                    <Tab key={el} value={el}>
+                      {el}
+                    </Tab>
+                  ))}
+                </TabList>
+                {ELEMENTS.map((el) => (
+                  <TabPanel key={el} value={el}>
+                    <Stack direction="horizontal" gap="md" align="center">
+                      <ElementMark element={el} size={28} />
+                      <Text size="sm" tone="muted">
+                        The {el} panel. Panels unmount when hidden unless you
+                        pass <code className="font-mono">keepMounted</code>.
+                      </Text>
+                    </Stack>
+                  </TabPanel>
+                ))}
+              </Tabs>
+            </Specimen>
+
+            <Specimen
+              title="Table"
+              note="Native table semantics inside a scroll container, so a wide table scrolls in its own box rather than blowing out the page."
+            >
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHeaderCell>Token</TableHeaderCell>
+                    <TableHeaderCell>Tier</TableHeaderCell>
+                    <TableHeaderCell>What sits here</TableHeaderCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-mono text-2xs">--void</TableCell>
+                    <TableCell>Page</TableCell>
+                    <TableCell>The stage — nothing but the page</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-mono text-2xs">--sumi</TableCell>
+                    <TableCell>Recessed</TableCell>
+                    <TableCell>Inputs, wells, code blocks</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-mono text-2xs">--sumi-2</TableCell>
+                    <TableCell>Raised</TableCell>
+                    <TableCell>Cards, modals, anything holding content</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </Specimen>
+          </Stack>
+        </Container>
+      </Section>
+
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="A native dialog"
+      >
+        <Stack gap="md">
+          <Text size="sm" tone="muted">
+            Press Escape, click the backdrop, or use the close button. Tab
+            through this — focus never leaves the dialog, because the browser
+            traps it.
+          </Text>
+          <Stack direction="horizontal" gap="sm">
+            <Button
+              variant="primary"
+              onClick={() => {
+                setModalOpen(false);
+                toast.push({ tone: "success", message: "Confirmed." });
+              }}
+            >
+              Confirm
+            </Button>
+            <Button variant="secondary" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+          </Stack>
+        </Stack>
+      </Modal>
 
       {/* ------------------------------ Footer ------------------------------ */}
       <Section id="checks" rhythm="loose">
