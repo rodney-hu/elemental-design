@@ -162,6 +162,7 @@ module.exports = {
       // thing these exist to replace — genso-check flags it.
       maxWidth: {
         measure: "var(--measure)",
+        "measure-display": "var(--measure-display)",
         "container-sm": "var(--container-sm)",
         "container-md": "var(--container-md)",
         "container-lg": "var(--container-lg)",

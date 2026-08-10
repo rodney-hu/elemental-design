@@ -121,7 +121,7 @@ canonical order for you.
 
 ### Width — measure and containers
 
-- **Prose is capped at `--measure` (68ch).** This is the one readability
+- **Prose is capped at `--measure` (68ch); headlines at `--measure-display` (22ch).** A display size at 68ch runs to an absurd line length, which is why every project froze its own `max-w-[19ch]`. This is the one readability
   rule the system talked about for five versions without ever setting.
   `Prose` applies it; if you're wrapping copy by hand, use
   `max-w-measure`.

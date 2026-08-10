@@ -296,11 +296,21 @@ const rules = [
   {
     name: "dead-pattern",
     doc: "Patterns removed by a version bump that still look plausible in older code.",
-    test({ src, add }) {
+    test({ src, add, classes }) {
+      /* `backdrop-blur` is banned on PANELS, not everywhere. foundations.md
+         has always carved out the real exception — "translucency is only
+         worth it where content genuinely scrolls underneath" — and a fixed
+         or sticky bar is exactly that case. Flagging a navbar for it is a
+         false positive, and false positives are how a rule gets deleted
+         instead of obeyed. So: only complain when nothing in the same class
+         list pins the element out of flow. */
       for (const m of src.matchAll(/\bbackdrop-blur(?:-\w+)?\b/g)) {
+        const range = classes.find(([a, b]) => m.index >= a && m.index < b);
+        const siblings = range ? src.slice(range[0], range[1]) : "";
+        if (/\b(?:fixed|sticky)\b/.test(siblings)) continue;
         add(
           m.index,
-          `"${m[0]}" — panels are solid as of v0.6. On a flat black page there is nothing behind a panel to blur, so it is pure cost`,
+          `"${m[0]}" — panels are solid as of v0.6. On a flat black page there is nothing behind a panel to blur, so it is pure cost. (Allowed on a fixed/sticky bar, where content really does scroll underneath.)`,
         );
       }
       for (const m of src.matchAll(/\bbg-sumi(?:-2)?\/[\w[\].%]+/g)) {

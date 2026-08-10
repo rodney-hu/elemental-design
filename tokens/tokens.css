@@ -171,6 +171,12 @@
      copy you can't route through that component. */
   --measure: 68ch;
 
+  /* Headlines need a much tighter measure than prose — a display size set to
+     68ch runs to an absurd line length, so every project hand-typed something
+     like `max-w-[19ch]` and froze it. ~22ch keeps a hero headline to two or
+     three lines at --text-4xl without hyphenating. */
+  --measure-display: 22ch;
+
   /* — Container widths — what "the page" is allowed to be —
      Every project had been hand-typing a max-width, which is how one site
      ended up with three different content widths on three page types. */
@@ -557,6 +563,27 @@
     var(--halo-air) 0%,
     transparent 72%
   );
+}
+
+/* — Marker alignment —
+   Centres a small marker — a bullet, a tick, a dot — on the FIRST line of the
+   text beside it, at any text size and any marker size.
+
+   The hand-rolled version of this is a magic top margin, and it is always
+   *derived* rather than eyeballed: centring a 6px dot on 17px text at 1.65
+   line-height is (17 × 1.65 − 6) / 2 ≈ 11px, so `mt-[0.68rem]` appears in the
+   markup and looks arbitrary to every later reader. Worse, it is frozen — it
+   silently stops being centred the moment the type scale or the line-height
+   moves, and nothing fails.
+
+   `1lh` resolves to the element's own line-height, so this stays correct
+   across both. Put it on the marker's wrapper:
+
+     <span class="marker-line shrink-0"><span class="h-1.5 w-1.5 …" /></span> */
+.marker-line {
+  display: flex;
+  block-size: 1lh;
+  align-items: center;
 }
 
 /* — Surface effects — sheen and edge —

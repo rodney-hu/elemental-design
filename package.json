@@ -1,6 +1,6 @@
 {
   "name": "elemental-design",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Genso (元素) — Rodney's personal design system. Tokens, primitives, layout shells, and motion language.",
   "license": "UNLICENSED",
   "private": true,

@@ -2,7 +2,28 @@
 
 Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
-## v1.2 — current
+## v1.3 — current
+
+**Three gaps the portfolio upgrade surfaced.** Upgrading `gtm-portfolio` from
+v0.6 to v1.2 was supposed to be a consumer catching up with the system; it
+turned out to be the system catching up with a real page.
+
+- **`--measure-display` (22ch).** Only a *prose* measure existed, so every
+  project hand-typed something like `max-w-[19ch]` for a headline and froze
+  it. A display size at 68ch runs to an absurd line length.
+- **`.marker-line`.** Centres a bullet or icon on the first line of adjacent
+  text at any text size, via `1lh`. Replaces the hand-computed top margin
+  (`mt-[0.68rem]` = (17px x 1.65 - 6px) / 2) that looks arbitrary to every
+  later reader and silently stops being centred when the type scale moves.
+- **`backdrop-blur` is no longer flagged on fixed/sticky elements.**
+  `foundations.md` always carved out the real exception — translucency is
+  worth it where content genuinely scrolls underneath — and a navbar is
+  exactly that. The rule was flagging correct code, which is how a rule gets
+  deleted instead of obeyed.
+
+**Not breaking.**
+
+## v1.2
 
 **Elemental wash — a fifth tier in the glow namespace.** A card that reads as
 its element rather than as a panel catching its light. Prompted by a
