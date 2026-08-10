@@ -21,6 +21,15 @@ turned out to be the system catching up with a real page.
   exactly that. The rule was flagging correct code, which is how a rule gets
   deleted instead of obeyed.
 
+- **`genso-allow` now works with a multi-line reason.** The suppression
+  granted only the comment's first line and the one after, so a wrapped
+  explanation — the normal case, since the rule demands a justification —
+  pushed the code it excused out of range and the suppression silently did
+  nothing. It now runs to one line past the end of the comment block, the
+  same scope as eslint's `disable-next-line`, and deliberately no wider: a
+  two- or three-line window quietly excuses the *next* violation too, which
+  is worse than no suppression because it looks like it worked.
+
 **Not breaking.**
 
 ## v1.2

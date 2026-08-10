@@ -95,13 +95,38 @@ export function collectAllowances(rawSrc) {
   const allowed = new Map();
   const lines = rawSrc.split("\n");
 
+  const grant = (line, rule) => {
+    if (!allowed.has(line)) allowed.set(line, new Set());
+    allowed.get(line).add(rule);
+  };
+
   lines.forEach((line, i) => {
     for (const m of line.matchAll(/genso-allow:\s*([\w-]+)\s*[—-]\s*\S/g)) {
       const rule = m[1];
-      // The line it's on, and the next line (comment above the code).
-      for (const target of [i + 1, i + 2]) {
-        if (!allowed.has(target)) allowed.set(target, new Set());
-        allowed.get(target).add(rule);
+
+      /* The allowance has to survive a MULTI-LINE reason, which is the normal
+         case — the rule demands a justification and a good one rarely fits on
+         one line. Granting only "this line and the next" meant a three-line
+         explanation pushed the code it excused out of range, so the
+         suppression silently did nothing. (Hit while upgrading a real
+         consumer, which is the only way this kind of thing gets found.)
+
+         So: walk to the end of the comment block, then grant exactly ONE
+         line past it — the line being excused. Same scope as eslint's
+         `disable-next-line`, and deliberately not wider: a window of two or
+         three lines silently excuses the NEXT violation too, which is worse
+         than no suppression at all because it looks like it worked. */
+      /* `i` and `end` are 0-indexed array positions; `allowed` is keyed by
+         1-indexed LINE NUMBERS, so the last granted line is `end + 2`, not
+         `end + 1`. Getting that wrong grants the comment's own lines and
+         nothing else, so every suppression appears to be ignored. */
+      let end = i;
+      if (!/\*\//.test(line.slice(m.index))) {
+        while (end < lines.length - 1 && !/\*\//.test(lines[end])) end++;
+      }
+
+      for (let target = i + 1; target <= end + 2; target++) {
+        grant(target, rule);
       }
     }
   });
