@@ -12,40 +12,81 @@ export function cx(...classes: Array<string | false | undefined>) {
 }
 
 /* ---------------------------------- Button --------------------------------- */
-/* Primary = fire only. Air = the "featured/elevated" variant. Secondary =
-   neutral outline. Don't add a water/earth button variant without a real
-   reason — see foundations.md on one accent leading per screen. */
+/* Every element, plus two neutral registers.
+ *
+ * Until v2.0 this component encoded a colour-to-role binding: `primary` WAS
+ * fire, air was "the featured variant", and a water or earth button needed a
+ * justification. That is gone. Colour is free — an accent is a colour that
+ * complements the neutrals, not a job title. Lead a page with earth if earth
+ * is what the page wants.
+ *
+ * What the elements still bind is MOTION, not role. See the `.motion-*`
+ * signatures in tokens.css.
+ *
+ * `solid` and `outline` are the two shapes a button comes in; `accent` picks
+ * the colour. That split is deliberate: with the old scheme, wanting an
+ * outlined fire button meant there was no variant for it. */
 
-type ButtonVariant = "primary" | "air" | "secondary";
+type ButtonAccent = "fire" | "water" | "earth" | "air";
+type ButtonShape = "solid" | "outline" | "quiet";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
+  accent?: ButtonAccent;
+  shape?: ButtonShape;
 }
 
-const buttonStyles: Record<ButtonVariant, string> = {
-  primary:
-    "bg-fire text-washi px-6 py-3 rounded font-medium shadow-glow-fire-soft " +
-    "hover:shadow-glow-fire transition-shadow duration-default ease-air " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fire focus-visible:ring-offset-2 focus-visible:ring-offset-sumi " +
-    "active:scale-95 disabled:opacity-50 disabled:pointer-events-none",
-  air:
-    "bg-transparent border-[1.5px] border-air text-air-text px-6 py-3 rounded font-medium " +
-    "shadow-glow-air-soft hover:shadow-glow-air hover:bg-air/10 transition-all duration-default ease-air " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-air focus-visible:ring-offset-2 focus-visible:ring-offset-sumi " +
-    "active:scale-95 disabled:opacity-50 disabled:pointer-events-none",
-  secondary:
-    "bg-transparent border border-line-strong text-washi px-6 py-3 rounded font-medium " +
-    "hover:border-washi-dim transition-colors duration-default " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-washi/30 " +
-    "disabled:opacity-50 disabled:pointer-events-none",
+const BUTTON_BASE =
+  "px-6 py-3 rounded font-medium transition-all duration-default ease-air " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-sumi " +
+  "active:scale-95 disabled:opacity-50 disabled:pointer-events-none";
+
+/* Solid fills take their foreground from `--on-{element}`, NOT from a fixed
+   --washi. That matters: --washi on --earth is 3.67:1 and fails AA outright,
+   and on --air it is 2.09:1. Both need --void instead. Nobody had hit this
+   before v2.0 because only fire was ever allowed to be a solid CTA, so the
+   pairing was never computed for the other three.
+
+   Outline uses the `-text` tint, because the base colours are unreadable as
+   glyphs on a dark page (--fire is 2.7:1 on void). Both splits are
+   accessibility rules, not style ones — `npm run check` verifies all of them. */
+const buttonSolid: Record<ButtonAccent, string> = {
+  fire: "bg-fire text-on-fire shadow-glow-fire-soft hover:shadow-glow-fire focus-visible:ring-fire",
+  water:
+    "bg-water text-on-water shadow-glow-water-soft hover:shadow-glow-water focus-visible:ring-water",
+  earth:
+    "bg-earth text-on-earth shadow-glow-earth-soft hover:shadow-glow-earth focus-visible:ring-earth",
+  air: "bg-air text-on-air shadow-glow-air-soft hover:shadow-glow-air focus-visible:ring-air",
 };
 
+const buttonOutline: Record<ButtonAccent, string> = {
+  fire: "bg-transparent border-[1.5px] border-fire text-fire-text shadow-glow-fire-soft hover:shadow-glow-fire hover:bg-fire/10 focus-visible:ring-fire",
+  water:
+    "bg-transparent border-[1.5px] border-water text-water-text shadow-glow-water-soft hover:shadow-glow-water hover:bg-water/10 focus-visible:ring-water",
+  earth:
+    "bg-transparent border-[1.5px] border-earth text-earth-text shadow-glow-earth-soft hover:shadow-glow-earth hover:bg-earth/10 focus-visible:ring-earth",
+  air: "bg-transparent border-[1.5px] border-air text-air-text shadow-glow-air-soft hover:shadow-glow-air hover:bg-air/10 focus-visible:ring-air",
+};
+
+/* The neutral register — no accent at all. Kept because a page full of
+   coloured buttons has no hierarchy left, which is a composition problem
+   rather than a colour rule. */
+const BUTTON_QUIET =
+  "bg-transparent border border-line-strong text-washi hover:border-washi-dim focus-visible:ring-washi/30";
+
 export function Button({
-  variant = "primary",
+  accent = "fire",
+  shape = "solid",
   className,
   ...props
 }: ButtonProps) {
-  return <button className={cx(buttonStyles[variant], className)} {...props} />;
+  const look =
+    shape === "quiet"
+      ? BUTTON_QUIET
+      : shape === "outline"
+        ? buttonOutline[accent]
+        : buttonSolid[accent];
+
+  return <button className={cx(BUTTON_BASE, look, className)} {...props} />;
 }
 
 /* ----------------------------------- Card ----------------------------------- */

@@ -58,7 +58,12 @@ new color variant" questions are already answered there.
   input-related components grow past what fits here comfortably).
 - Every component takes `className` and merges it last, so callers can
   override without fighting specificity.
-- No component reaches for `earth` or a hardcoded color directly for
+- Colour is not bound to role (v2.0): every accent is available to every
+  component. `Button` takes `accent` × `shape`, so an outlined earth button
+  is as legitimate as a solid fire one. What the elements bind is motion —
+  see the `.motion-*` signatures in `tokens/tokens.css`.
+- Superseded, kept only so the old note isn't confusing: no component used to
+  reach for `earth` or a hardcoded color directly for
   emphasis — `earth` is grounding/stability, not an attention-getter. If
   something needs to visually lead, that's `fire` or `air`'s job.
 

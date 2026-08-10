@@ -6,6 +6,56 @@ nobody (including future-you) has to re-derive it from scratch.
 
 ---
 
+**Colour is free. Motion is bound.** *(v2.0 — supersedes the Avatar
+principle's enforcement, the Fourfold Rule, and "one accent leads per
+screen".)*
+
+The system had been binding the four elements to **roles**: fire was the CTA
+colour, earth was "grounding, not an attention-getter", one accent had to
+lead each screen, and all four could only coexist inside a governed Fourfold.
+
+That was the wrong axis, and the tell was how often the rules said no to
+compositions that were fine. "Only fire may lead" is a rule about *hierarchy*
+wearing an elemental costume — and hierarchy is a composition problem, solved
+with contrast and space, not by reserving a hue. Meanwhile the thing that
+actually makes this system feel like itself — two neutrals doing nearly all
+the work, generous space, glow as emphasis — never depended on those rules at
+all.
+
+So the binding moved rather than disappeared:
+
+> **An accent is not a job title.** Any colour may be used for anything.
+> What an element governs is how a thing *moves*.
+
+Fire is not the CTA colour; fire is the colour that **strikes**. Water
+**flows**, earth **settles**, air **drifts**. Shipped as `.motion-*` classes
+and an `elementMotion` export, so the binding is a real feature rather than a
+paragraph — the same reason `easeAir` exists in JS at all.
+
+All four signatures run on the single `--ease-air` curve. Worth recording
+because it was the obvious thing to get wrong: four characters do **not**
+need four beziers. Putting 70% of the travel in the first 30% of the timeline
+reads as a strike regardless of the curve underneath, so the one-curve rule
+survives intact.
+
+Kept deliberately: **semantic stays separate from element.** `--semantic-error`
+and `--fire` still share a hex and not a variable. Error, warning and success
+mean something specific; unbinding those would make red ambiguous, which is a
+different thing from freeing decoration.
+
+**Unbinding colour immediately broke accessibility in a way nobody could have
+noticed before.** The moment any accent could be a solid CTA, three new
+fill/text pairings existed that had never been computed — because while fire
+was the only legal solid fill, there was nothing else to check. Two of them
+fail outright: `--washi` is **3.67:1 on --earth** and **2.09:1 on --air**,
+both below the 4.5:1 floor. `--void` is correct for both (4.95:1 and 8.69:1).
+
+Encoded as `--on-{element}` tokens with a check that recomputes all four, so
+changing an element's triplet cannot quietly break its button. The general
+lesson is worth more than the fix: **removing a constraint doesn't only
+enable new designs, it enables new bugs.** The old rule had been hiding this
+one for six versions.
+
 **The linter's job is the consuming project, not this repo.**
 Reading back the whole decision log to plan v0.7 surfaced something none of the
 individual entries said out loud: **every rule in it was learned from a failure

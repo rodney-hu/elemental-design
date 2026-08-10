@@ -77,6 +77,14 @@ module.exports = {
         success: "rgb(var(--semantic-success-rgb) / <alpha-value>)",
         "success-text": "rgb(var(--semantic-success-text-rgb) / <alpha-value>)",
 
+        // The legible foreground for each SOLID accent fill. Not
+        // alpha-composable on purpose: these are a fixed pairing decided by
+        // contrast, not a colour you tint. See --on-* in tokens.css.
+        "on-fire": "var(--on-fire)",
+        "on-water": "var(--on-water)",
+        "on-earth": "var(--on-earth)",
+        "on-air": "var(--on-air)",
+
         // Element "soft" fills stay as authored tokens — they are fixed-alpha
         // by design (0.18), not meant to be alpha-composable.
         "fire-soft": "var(--fire-soft)",

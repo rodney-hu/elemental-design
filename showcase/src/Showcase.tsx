@@ -6,9 +6,11 @@
  * did — and why it drifted, needed its own palette copy, and could never show
  * a component that hadn't been hand-rewritten.
  *
- * This file is also a working example of the system's own composition rules:
- * one accent leads (fire), exactly one Fourfold, prose on panels, and the
- * corner auras alternate sides with untinted stretches between them.
+ * It is also a working example of the system's composition habits: two
+ * neutrals carrying nearly everything, prose on panels, and corner auras on
+ * alternating sides with untinted stretches between them. Note what is NOT
+ * here any more — no rule about which accent may lead, because as of v2.0
+ * colour is not bound to role.
  */
 
 import * as React from "react";
@@ -141,17 +143,18 @@ export function Showcase() {
               A design system, so nothing starts from a blank canvas.
             </Heading>
             <Text size="md" tone="muted" className="max-w-measure">
-              Four elements, two neutrals, one accent leading at a time. Every
-              value below is a token; every rule below is enforced by{" "}
+              Two neutrals do the work; four accents are free to lead anything.
+              What the elements bind is motion. Every value below is a token,
+              and every rule below is enforced by{" "}
               <Link href="#checks" tone="fire">
                 genso-check
               </Link>
               .
             </Text>
             <Stack direction="horizontal" gap="sm" wrap>
-              <Button variant="primary">Primary action</Button>
-              <Button variant="air">Featured</Button>
-              <Button variant="secondary">Secondary</Button>
+              <Button accent="fire">Primary action</Button>
+              <Button accent="air" shape="outline">Featured</Button>
+              <Button shape="quiet">Secondary</Button>
             </Stack>
           </Stack>
         </Container>
@@ -163,7 +166,7 @@ export function Showcase() {
           <Stack gap="xl">
             <Stack gap="sm">
               <Eyebrow>The four elements</Eyebrow>
-              <Heading level={2}>Each one is a colour and a behaviour</Heading>
+              <Heading level={2}>Colour is free; motion is bound</Heading>
             </Stack>
 
             <Specimen
@@ -200,22 +203,55 @@ export function Showcase() {
                 ))}
               </Stack>
             </Specimen>
+
+            <Specimen
+              title="Buttons — every accent, both shapes"
+              note="Until v2.0 there was one primary button and it was fire; a water or earth button needed a justification. Colour is not a job title any more — accent and shape are separate axes, so an outlined earth button is as ordinary as a solid fire one."
+            >
+              <Stack gap="md">
+                <Stack direction="horizontal" gap="sm" wrap>
+                  {ELEMENTS.map((el) => (
+                    <Button key={el} accent={el}>
+                      {el}
+                    </Button>
+                  ))}
+                </Stack>
+                <Stack direction="horizontal" gap="sm" wrap>
+                  {ELEMENTS.map((el) => (
+                    <Button key={el} accent={el} shape="outline">
+                      {el}
+                    </Button>
+                  ))}
+                  <Button shape="quiet">quiet</Button>
+                </Stack>
+                <Text size="2xs" tone="muted" className="max-w-measure">
+                  Solid fills take their text colour from{" "}
+                  <code className="font-mono">--on-{"{element}"}</code>, not from
+                  a fixed neutral: paper on green is 3.67:1 and fails AA, and on
+                  gold it is 2.09:1. Both need ink instead. Nobody had computed
+                  those pairings while fire was the only legal solid fill.
+                </Text>
+              </Stack>
+            </Specimen>
           </Stack>
         </Container>
       </Chapter>
 
       {/* ----------------------------- Fourfold ----------------------------- */}
-      {/* At most one per page, never in the same viewport as a primary CTA. */}
+      {/* Just a layout now. Its five governing conditions were retired in
+          v2.0 along with the rest of the colour-to-role binding. */}
       <Chapter aura="r">
         <Container size="lg">
           <Stack gap="xl">
             <Stack gap="sm">
-              <Eyebrow>The one sanctioned exception</Eyebrow>
+              <Eyebrow>Layout</Eyebrow>
               <Heading level={2}>The Fourfold</Heading>
               <Text size="sm" tone="muted" className="max-w-measure">
-                The only place all four accents coexist. Four peers, one element
-                each — a claim about range, not four accents competing. Outside
-                this set, one accent still leads.
+                Four peers, one element each, in canonical order. Until v2.0
+                this was the single sanctioned place all four accents could
+                coexist, governed by five conditions. Those are gone — accents
+                are free now, so this is simply a four-up layout you can reach
+                for because it looks right.
               </Text>
             </Stack>
 
@@ -461,8 +497,8 @@ export function Showcase() {
                 <Checkbox label="Send me the changelog" defaultChecked />
 
                 <Stack direction="horizontal" gap="sm">
-                  <Button variant="primary">Submit</Button>
-                  <Button variant="secondary" disabled>
+                  <Button accent="fire">Submit</Button>
+                  <Button shape="quiet" disabled>
                     Disabled
                   </Button>
                 </Stack>
@@ -526,7 +562,7 @@ export function Showcase() {
               note="A native <dialog>. Escape closes it, focus is trapped inside, and it renders in the browser's top layer — none of which is our code."
             >
               <Stack direction="horizontal" gap="sm" wrap>
-                <Button variant="primary" onClick={() => setModalOpen(true)}>
+                <Button accent="fire" onClick={() => setModalOpen(true)}>
                   Open modal
                 </Button>
               </Stack>
@@ -540,7 +576,7 @@ export function Showcase() {
                 {(["success", "info", "warning", "error"] as const).map((tone) => (
                   <Button
                     key={tone}
-                    variant="secondary"
+                    shape="quiet"
                     onClick={() =>
                       toast.push({
                         tone,
@@ -628,7 +664,7 @@ export function Showcase() {
           </Text>
           <Stack direction="horizontal" gap="sm">
             <Button
-              variant="primary"
+              accent="fire"
               onClick={() => {
                 setModalOpen(false);
                 toast.push({ tone: "success", message: "Confirmed." });
@@ -636,7 +672,7 @@ export function Showcase() {
             >
               Confirm
             </Button>
-            <Button variant="secondary" onClick={() => setModalOpen(false)}>
+            <Button shape="quiet" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
           </Stack>

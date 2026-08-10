@@ -83,6 +83,54 @@ export const riseInOnScroll = {
  */
 export const riseDelay = [0, 0.05, 0.18, 0.3, 0.42] as const;
 
+/* --------------------------- Element motion signatures --------------------------- */
+/**
+ * As of v2.0, motion is the ONLY thing the four elements bind. Colour is
+ * free — any accent may lead any component — but when a thing animates, it
+ * animates in its element's character.
+ *
+ * Fire is not "the CTA colour". Fire is the colour that strikes.
+ *
+ *   <motion.div {...elementMotion.fire} />
+ *
+ * The JS twin of the `.motion-*` classes in tokens.css. Same reason
+ * `easeAir` exists at all: framer-motion cannot read a CSS variable, and a
+ * hand-typed copy is how a second easing curve reached production once
+ * before (docs/decisions.md).
+ *
+ * All four use the single `easeAir` curve. The characters come from the
+ * keyframe shape, not from four different beziers — introducing a second
+ * curve is still forbidden, and it turns out not to be necessary.
+ */
+export const elementMotion = {
+  /** 火 Strike — committed and fast, with a small overshoot, then it holds. */
+  fire: {
+    initial: { opacity: 0, y: 14, scale: 0.96 },
+    animate: { opacity: 1, y: [14, -2, 0], scale: [0.96, 1.01, 1] },
+    transition: { duration: duration.default, ease: easeAir },
+  },
+  /** 水 Flow — enters off-axis and eases across. No hard start or stop. */
+  water: {
+    initial: { opacity: 0, x: -14, y: 6 },
+    animate: { opacity: 1, x: 0, y: 0 },
+    transition: { duration: duration.slow, ease: easeAir },
+  },
+  /** 土 Settle — arrives from above and lands heavy. Overshoots down, never up. */
+  earth: {
+    initial: { opacity: 0, y: -16 },
+    animate: { opacity: 1, y: [-16, 2, 0] },
+    transition: { duration: duration.default, ease: easeAir },
+  },
+  /** 風 Drift — the lightest and slowest to commit. Seems to arrive from nowhere. */
+  air: {
+    initial: { opacity: 0, y: 18 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: duration.slow, ease: easeAir },
+  },
+} as const;
+
+export type ElementMotionName = keyof typeof elementMotion;
+
 /**
  * True when the user has asked for reduced motion. Every entrance in this
  * system is decorative — gate JS animation on this the way tokens.css gates

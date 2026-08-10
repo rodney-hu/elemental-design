@@ -28,6 +28,38 @@ function useReplay() {
   return [n, () => setN((v) => v + 1)] as const;
 }
 
+/**
+ * Play / Stop with looping.
+ *
+ * The demos used to fire once. That is correct as UI and useless as a
+ * demonstration: 150ms is about nine frames, so "Race" looked like it did
+ * nothing at all — which is exactly how it was reported. Motion this short
+ * has to repeat before you can see it.
+ *
+ * Looping is done by re-triggering on a timer rather than with
+ * `animation-iteration-count: infinite`, because CSS iterations run
+ * back-to-back and a 150ms pass becomes a strobe. The interval leaves a beat
+ * between passes, and — the part that matters — each pass still runs for its
+ * real duration, so the demo never lies about the value it is teaching.
+ */
+function useLoop(intervalMs = 1600) {
+  const [tick, setTick] = React.useState(0);
+  const [playing, setPlaying] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!playing) return;
+    const id = setInterval(() => setTick((t) => t + 1), intervalMs);
+    return () => clearInterval(id);
+  }, [playing, intervalMs]);
+
+  const toggle = () => {
+    setPlaying((p) => !p);
+    setTick((t) => t + 1); // fire immediately rather than after one interval
+  };
+
+  return { tick, playing, toggle };
+}
+
 /* ----------------------------- Easing curve plot ---------------------------- */
 /* The bezier drawn at real scale, with a dot travelling it. Plotted from the
    token's own control points rather than hardcoded, so the drawing can never
@@ -36,7 +68,7 @@ function useReplay() {
 const [cx1, cy1, cx2, cy2] = easeAir;
 
 function EasingPlot() {
-  const [replay, fire] = useReplay();
+  const { tick, playing, toggle } = useLoop();
   const SIZE = 200;
   const PAD = 24;
   const span = SIZE - PAD * 2;
@@ -96,21 +128,41 @@ function EasingPlot() {
             The path is the same string the visible curve is drawn from, so
             the dot cannot travel a different line than the one on screen. */}
         <g
-          key={replay}
-          className={cx("curve-dot", replay > 0 && "curve-dot-run")}
+          key={`ease-${tick}`}
+          className={cx("curve-dot", tick > 0 && "curve-dot-run")}
           style={{ offsetPath: `path("${path}")` } as React.CSSProperties}
         >
           <circle r={4} fill="var(--fire-text)" />
         </g>
+
+        {/* The same journey on a linear timing function, so the curve's
+            character is legible by contrast. Alone, ease-air just looks like
+            "it moved"; beside a constant-speed dot you can see it cover most
+            of the distance immediately and then settle.
+            The `linear` here is a REFERENCE, not a second system curve — it
+            exists to be compared against, never to animate real UI. */}
+        <g
+          key={`linear-${tick}`}
+          className={cx("curve-dot", tick > 0 && "curve-dot-run-linear")}
+          style={{ offsetPath: `path("${linear}")` } as React.CSSProperties}
+        >
+          <circle r={3} fill="var(--washi-dim)" opacity={0.55} />
+        </g>
       </svg>
 
       <Stack direction="horizontal" gap="md" align="center" wrap>
-        <Button variant="secondary" onClick={fire}>
-          Replay
+        <Button accent="fire" shape={playing ? "quiet" : "solid"} onClick={toggle}>
+          {playing ? "Stop" : "Play"}
         </Button>
-        <Text size="2xs" tone="muted" className="font-mono">
-          cubic-bezier({easeAir.join(", ")})
-        </Text>
+        <Stack gap="xs">
+          <Text size="2xs" tone="muted" className="font-mono">
+            <span className="text-fire-text">●</span> ease-air · cubic-bezier(
+            {easeAir.join(", ")})
+          </Text>
+          <Text size="2xs" tone="muted" className="font-mono">
+            <span>●</span> linear — reference only, never real UI
+          </Text>
+        </Stack>
       </Stack>
     </Stack>
   );
@@ -128,7 +180,7 @@ const DURATIONS = [
 ] as const;
 
 function DurationRace() {
-  const [replay, fire] = useReplay();
+  const { tick, playing, toggle } = useLoop();
 
   return (
     <Stack gap="md">
@@ -148,12 +200,12 @@ function DurationRace() {
                   applied at mount it would run at page load and be finished
                   before this section is ever on screen. */}
               <div
-                key={`${d.key}-${replay}`}
+                key={`${d.key}-${tick}`}
                 className="race-dot absolute top-1/2 -translate-y-1/2 left-1 w-6 h-6 rounded bg-fire shadow-glow-fire-soft"
                 style={
                   {
                     "--race-ms": `${d.ms}ms`,
-                    ...(replay > 0 && {
+                    ...(tick > 0 && {
                       animation: `raceAcross ${d.ms}ms var(--ease-air) forwards`,
                     }),
                   } as React.CSSProperties
@@ -166,9 +218,15 @@ function DurationRace() {
           </Stack>
         ))}
       </Stack>
-      <Button variant="secondary" onClick={fire}>
-        Race
-      </Button>
+      <Stack direction="horizontal" gap="md" align="center" wrap>
+        <Button accent="fire" shape={playing ? "quiet" : "solid"} onClick={toggle}>
+          {playing ? "Stop" : "Play"}
+        </Button>
+        <Text size="2xs" tone="muted">
+          Each pass runs at its true duration; the gap between passes is the
+          loop, not the easing.
+        </Text>
+      </Stack>
     </Stack>
   );
 }
@@ -179,33 +237,37 @@ function DurationRace() {
 
 const BEHAVIOURS: Array<{
   element: Element;
-  trait: string;
+  signature: string;
   behaviour: string;
-  demo: string;
+  duration: string;
 }> = [
   {
     element: "fire",
-    trait: "Bold",
-    behaviour: "The strike — fast, decisive, then it glows",
-    demo: "demo-fire",
+    signature: "Strike",
+    behaviour:
+      "Most of the distance is covered before a third of the time has passed. A small overshoot, then it holds.",
+    duration: "default · 400ms",
   },
   {
     element: "water",
-    trait: "Fluid",
-    behaviour: "Lifts and pools light rather than switching state",
-    demo: "demo-water",
+    signature: "Flow",
+    behaviour:
+      "Enters off-axis and eases across. No hard start, no hard stop — movement as a current rather than a placement.",
+    duration: "slow · 700ms",
   },
   {
     element: "earth",
-    trait: "Grounded",
-    behaviour: "Settles down into its own weight",
-    demo: "demo-earth",
+    signature: "Settle",
+    behaviour:
+      "Arrives from above and lands. The only signature that overshoots downward — that is what weight looks like, and why it never bounces.",
+    duration: "default · 400ms",
   },
   {
     element: "air",
-    trait: "Formless",
-    behaviour: "Fades and rises. Never bounces, never overshoots",
-    demo: "demo-air",
+    signature: "Drift",
+    behaviour:
+      "The lightest and the slowest to commit. Fades most of the way in before it has finished moving, so it seems to arrive from nowhere.",
+    duration: "slow · 700ms",
   },
 ];
 
@@ -221,54 +283,63 @@ const STATES: Array<{ element: Element; state: string }> = [
 ];
 
 function ElementBehaviours() {
-  /* A monotonic counter rather than toggling the class off and on again.
-     The obvious approach — setActive(null), then re-set it next frame — is
-     broken in a way that only shows up sometimes: requestAnimationFrame does
-     not fire while the page is hidden or backgrounded, so the second setState
-     never runs and the demo silently never plays. Bumping a counter and
-     letting it drive the `key` restarts the animation by remounting, with no
-     dependency on frame timing at all. */
-  const [play, setPlay] = React.useState<{ el: Element; n: number } | null>(
-    null,
-  );
+  /* All four loop together, so the characters are compared rather than
+     recalled. Playing them one at a time meant holding the previous one in
+     memory to notice a difference, which is most of why the distinction
+     never landed. */
+  const { tick, playing, toggle } = useLoop(2000);
 
   return (
-    <Grid cols={2} gap="lg">
-      {BEHAVIOURS.map((b) => (
-        <Card
-          key={b.element}
-          accent={b.element}
-          edge={b.element}
-          elevation={b.element === "earth" ? "rooted" : "raised"}
-        >
-          <Stack gap="md">
-            <Stack direction="horizontal" gap="md" align="center">
-              <span
-                key={`${b.element}-${play?.el === b.element ? play.n : 0}`}
-                className={cx(play?.el === b.element && b.demo)}
-              >
-                <ElementMark element={b.element} size={28} label={null} />
-              </span>
-              <Stack gap="xs">
-                <Heading level={4}>{b.trait}</Heading>
-                <Eyebrow tone={b.element}>{b.element}</Eyebrow>
+    <Stack gap="lg">
+      <Stack direction="horizontal" gap="md" align="center" wrap>
+        <Button accent="fire" shape={playing ? "quiet" : "solid"} onClick={toggle}>
+          {playing ? "Stop" : "Play all four"}
+        </Button>
+        <Text size="2xs" tone="muted">
+          These are the shipped <code className="font-mono">.motion-*</code>{" "}
+          classes, not demo-only code.
+        </Text>
+      </Stack>
+
+      <Grid cols={2} gap="lg">
+        {BEHAVIOURS.map((b) => (
+          <Card
+            key={b.element}
+            accent={b.element}
+            edge={b.element}
+            elevation={b.element === "earth" ? "rooted" : "raised"}
+          >
+            <Stack gap="md">
+              <Stack direction="horizontal" gap="md" align="center">
+                {/* The mark runs its own element's signature — the same class
+                    a consuming project would use. A fixed height keeps the
+                    row from reflowing as it moves. */}
+                <span className="flex h-10 w-10 items-center justify-center">
+                  <span
+                    key={`${b.element}-${tick}`}
+                    className={cx(tick > 0 && `motion-${b.element}`)}
+                  >
+                    <ElementMark element={b.element} size={28} label={null} />
+                  </span>
+                </span>
+                <Stack gap="xs">
+                  <Heading level={4}>{b.signature}</Heading>
+                  <Eyebrow tone={b.element}>
+                    {b.element} · {b.duration}
+                  </Eyebrow>
+                </Stack>
               </Stack>
+              <Text size="sm" tone="muted">
+                {b.behaviour}
+              </Text>
+              <code className="font-mono text-2xs text-washi-dim">
+                .motion-{b.element}
+              </code>
             </Stack>
-            <Text size="sm" tone="muted">
-              {b.behaviour}
-            </Text>
-            <Button
-              variant="secondary"
-              onClick={() =>
-                setPlay((p) => ({ el: b.element, n: (p?.n ?? 0) + 1 }))
-              }
-            >
-              Play
-            </Button>
-          </Stack>
-        </Card>
-      ))}
-    </Grid>
+          </Card>
+        ))}
+      </Grid>
+    </Stack>
   );
 }
 
@@ -296,7 +367,7 @@ function EntranceStagger() {
         ))}
       </Grid>
       <Stack direction="horizontal" gap="md" align="center" wrap>
-        <Button variant="secondary" onClick={fire}>
+        <Button shape="quiet" onClick={fire}>
           Replay stagger
         </Button>
         <Text size="2xs" tone="muted" className="font-mono">
@@ -458,7 +529,7 @@ function MotionOptIn({
             plays until you press a Play button.
           </Text>
         </Stack>
-        <Button variant="air" onClick={onToggle} aria-pressed={enabled}>
+        <Button accent="air" shape="outline" onClick={onToggle} aria-pressed={enabled}>
           {enabled ? "Disable motion preview" : "Enable motion preview"}
         </Button>
       </Stack>

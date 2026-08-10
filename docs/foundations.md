@@ -40,34 +40,53 @@ explains *why*, this file says *what to actually do*.
 - **Don't stack a tier on itself.** An input on a panel goes to `--sumi`, not
   `--sumi-2` — matching the surface it sits on flattens it.
 
-### The Fourfold Rule
+### Colour is not bound to role *(v2.0)*
 
-The one place all four accents may coexist. All five conditions are
-required — miss any one and it stops being a set and becomes four accents
-competing, which is still banned:
+**Any accent may be used for anything.** There is no CTA colour, no
+"success" element, no accent that is reserved or forbidden. The four accents
+exist to complement two neutrals; which one leads a given page is a
+composition decision, not a rule the system enforces.
 
-1. **Exactly four cells**, one element each, in canonical order
-   Fire → Water → Earth → Air.
-2. **One accent per cell** — its mark, its `-text` label, its halo. No
-   accent crosses a cell boundary.
-3. **At most one Fourfold per page**, and never in the same viewport as a
-   primary CTA.
-4. **Cells are peers** — equal size, weight and glow. Emphasise one and
-   the rule is broken.
-5. **Outside the set, the page still has exactly one leading accent**
-   (fire by default).
+Retired in v2.0, and not coming back:
 
-Use `Fourfold` from `layout/shells.tsx`; it enforces the arity and the
-canonical order for you.
+- ~~Fire is the only colour allowed on a primary CTA~~
+- ~~Earth is grounding, not an attention-getter~~
+- ~~One accent leads per screen~~
+- ~~The Fourfold Rule and its five conditions~~
+
+`Fourfold` still ships as a **layout component** — a four-up element grid in
+canonical order — but it is no longer a governed exception to anything. Use
+it because it looks right, not because it is the only place four accents are
+permitted.
+
+What replaced the binding: **the elements govern motion.** See "Element
+motion signatures" below.
+
+### Text on a filled accent
+
+When an accent is a solid fill with text on it, take the foreground from
+`--on-{element}` — never assume `--washi`:
+
+| Fill | Foreground | Ratio |
+|---|---|---|
+| `--fire` | `--on-fire` (washi) | 6.70:1 |
+| `--water` | `--on-water` (washi) | 4.52:1 |
+| `--earth` | `--on-earth` (**void**) | 4.95:1 — washi is 3.67:1 and fails |
+| `--air` | `--on-air` (**void**) | 8.69:1 — washi is 2.09:1 and fails badly |
+
+This became reachable only in v2.0. While fire was the only colour allowed
+to be a solid CTA, nobody had computed the other three, and two of them fail
+with the obvious choice. `npm run check` recomputes all four.
 
 - Anything rendered as **text** uses a `-text` token — `--fire-text` for
   elements, `--semantic-error-text` / `--semantic-warning-text` /
   `--semantic-success-text` for status. The base colors are fills and
   borders only: `--semantic-error` is 2.43:1 on ink, far below the 4.5:1
   AA floor, and is effectively invisible as a glyph.
-- Fire (`--fire`, `#AA0000`) is the only color allowed on a primary CTA.
-  It's matched to the real logo — don't drift it without checking the
-  logo first.
+- Fire (`--fire`, `#AA0000`) is sampled from the real logo — don't drift
+  the value without checking the logo first. That is a constraint on the
+  *value*, not on where the colour may appear: any accent may lead a CTA
+  (see "Colour is not bound to role" above).
 - Every element color ships in five forms: the true color (`--fire`), a
   lighter text-safe tint (`--fire-text`) for labels on dark backgrounds,
   a soft background tint (`--fire-soft`), and two glow strengths
@@ -212,6 +231,28 @@ Drawing rules for the geometric set, all enforced by `npm run check`:
   design, not a simplification; don't close it.
 
 ## Motion
+
+### Element motion signatures *(v2.0 — the one thing elements bind)*
+
+Colour is free; motion is not. When something animates, it animates in its
+element's character:
+
+| Class / export | Character | Duration |
+|---|---|---|
+| `.motion-fire` / `elementMotion.fire` | **Strike** — distance covered early, small overshoot, then holds | `default` |
+| `.motion-water` / `elementMotion.water` | **Flow** — enters off-axis, eases across, no hard start or stop | `slow` |
+| `.motion-earth` / `elementMotion.earth` | **Settle** — arrives from above and lands. Overshoots *down* | `default` |
+| `.motion-air` / `elementMotion.air` | **Drift** — lightest, slowest to commit | `slow` |
+
+All four run on the single `--ease-air` curve. Their characters come from
+**keyframe shape, not from four different beziers** — a second easing curve
+is still forbidden, and it turns out not to be needed: putting 70% of the
+travel in the first 30% of the timeline reads as a strike whatever curve is
+underneath.
+
+Don't mix signatures on one object, and don't give an object a signature
+that contradicts its colour — a fire-accented thing that drifts is the one
+combination that reads as a mistake rather than a choice.
 
 - One easing curve for the whole system: `--ease-air`
   (`cubic-bezier(0.16, 1, 0.3, 1)`), an ease-out curve. Don't introduce a

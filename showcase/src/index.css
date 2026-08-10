@@ -28,7 +28,17 @@ body {
    Putting them in tokens.css would ship four animations no project needs.
    --------------------------------------------------------------------------- */
 
-/* The duration race — same distance for all three bars.
+/* Looping playback is driven from JS, not by `animation-iteration-count`.
+   Two reasons, both about honesty of the demo:
+     · CSS iterations run back-to-back with no gap, so a 150ms pass becomes a
+       150ms strobe. Re-triggering on a timer leaves a beat between passes for
+       the eye to reset.
+     · Stretching the keyframe to build in a pause would mean the bar no
+       longer moves for the duration it claims to be demonstrating.
+   So each pass keeps its true 150 / 400 / 700ms, and the interval provides
+   the rest. See useLoop() in MotionLab.tsx.
+
+   The duration race — same distance for all three bars.
    Animates `left` rather than `translateX`: the travel distance depends on
    the track's own width, and a percentage `left` resolves against exactly
    that, whereas a percentage translate resolves against the DOT's width.
@@ -68,6 +78,14 @@ body {
 
 .curve-dot-run {
   animation: travelCurve var(--duration-slow) var(--ease-air) forwards;
+}
+
+/* The linear reference dot. `linear` is deliberate and is NOT a second
+   system curve — it exists only to be compared against, so the character of
+   ease-air is visible rather than merely asserted. Never animate real UI
+   with it. */
+.curve-dot-run-linear {
+  animation: travelCurve var(--duration-slow) linear forwards;
 }
 
 /* 火 FIRE — the strike. Fast, committed, then it glows. */

@@ -104,6 +104,25 @@
     var(--air-rgb) / 0.7
   ); /* capped below others on purpose — see decisions.md */
 
+  /* — On-fill foregrounds — which neutral is legible ON each solid accent —
+     v2.0 unbound colour from role, so any accent can now be a solid fill with
+     text on it. That immediately exposed a trap nobody had hit before, because
+     until then only fire was ever allowed to be a solid CTA:
+
+       --washi on --earth  =  3.67:1   FAILS AA
+       --void  on --earth  =  4.95:1   passes
+       --washi on --air    =  2.09:1   FAILS badly
+       --void  on --air    =  8.69:1   passes
+
+     So this is not a style preference, and it is not something to decide per
+     call site. Reach for `--on-{element}` whenever you put text on a filled
+     accent. `npm run check` recomputes all four ratios and fails below 4.5:1,
+     so changing an element's triplet can't quietly break its button. */
+  --on-fire: var(--washi); /* 6.70:1 */
+  --on-water: var(--washi); /* 4.52:1 — passes, and the tightest of the four */
+  --on-earth: var(--void); /* 4.95:1 — washi would be 3.67:1 */
+  --on-air: var(--void); /* 8.69:1 — washi would be 2.09:1 */
+
   /* — Semantic — separate axis from element color, see foundations.md —
      The base values are fills/borders only. The `-text` variants exist because
      the base reds/greens are unreadable as text on ink: --semantic-error is
@@ -437,6 +456,107 @@
   animation-delay: 0.42s;
 }
 
+/* — Element motion signatures —————————————————————————————————————
+   As of v2.0 this is the ONLY thing the four elements bind. Colour is free:
+   any accent may lead any component, any CTA, anything. What an element
+   still governs is how a thing MOVES.
+
+   Fire is not "the CTA colour" — fire is the colour that strikes. Use it
+   wherever you like; when it animates, it animates like fire.
+
+   All four run on the single --ease-air curve. The characters are made with
+   KEYFRAME TIMING, not with four different beziers — a second easing curve
+   is still forbidden (foundations.md), and it turns out not to be needed:
+   putting 70% of the travel in the first 30% of the timeline reads as a
+   strike whatever the curve underneath is doing.
+
+   Apply as `class="motion-fire"`, or import `elementMotion` from
+   `elemental-design/motion` for the framer-motion equivalents. All four are
+   gated on prefers-reduced-motion with everything else. */
+
+/* 火 STRIKE — committed and fast, then it holds. Most of the distance is
+   covered before a third of the time has passed; the rest is the settle. */
+@keyframes strikeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  30% {
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(-2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 水 FLOW — never a hard start or stop. Enters off-axis and eases across,
+   so the movement reads as a current rather than a placement. */
+@keyframes flowIn {
+  0% {
+    opacity: 0;
+    transform: translate(-14px, 6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+/* 土 SETTLE — arrives from above and lands. The only signature that ends
+   heavier than it began: it overshoots downward and comes to rest, which is
+   what weight looks like. Never a bounce — a bounce is lightness. */
+@keyframes settleIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 風 DRIFT — the lightest, and the slowest to commit. Fades most of the way
+   in before it has finished moving, so it seems to arrive from nowhere. */
+@keyframes driftIn {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.motion-fire {
+  opacity: 0;
+  animation: strikeIn var(--duration-default) var(--ease-air) forwards;
+}
+
+.motion-water {
+  opacity: 0;
+  animation: flowIn var(--duration-slow) var(--ease-air) forwards;
+}
+
+.motion-earth {
+  opacity: 0;
+  animation: settleIn var(--duration-default) var(--ease-air) forwards;
+}
+
+.motion-air {
+  opacity: 0;
+  animation: driftIn var(--duration-slow) var(--ease-air) forwards;
+}
+
 /* — Background aura geometry —
    Four things keep this from reading as a red-tinted background:
      1. anchored to the top corner and pushed ~45% off the horizontal edge,
@@ -753,6 +873,19 @@
     opacity: 1;
     transform: none;
     transition: none;
+  }
+
+  /* Element signatures are entrances too, so they land rather than animate.
+     Without this they would sit at opacity 0 forever — the universal
+     `animation-duration: 0.01ms` below stops the animation but never applies
+     its end state, and every one of these starts invisible. */
+  .motion-fire,
+  .motion-water,
+  .motion-earth,
+  .motion-air {
+    opacity: 1;
+    transform: none;
+    animation: none;
   }
 
   *,

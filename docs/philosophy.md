@@ -21,20 +21,39 @@ Every component in this system should be checked against both: does it
 hold restraint, and does it still feel premium? A component that's quiet
 but flat has failed as much as one that's flashy but cluttered.
 
-## Four elements, two jobs each
+## Four elements, one job
 
-Each element does double duty — it's a **color** and a **behavior**.
-Neither is decorative; both come from the same trait.
+The elements are a **mindset**, and they govern **motion**. They do not
+govern colour.
 
-| Element | Color | Trait | As a color | As a behavior |
-|---|---|---|---|---|
-| 火 Fire | Red (`--fire`) | Bold | The primary accent — the one color allowed to insist | Full-strength glow on primary actions; the strike |
-| 水 Water | Blue (`--water`) | Fluid | Secondary accent, info | The hover morph — panels lift and pool light rather than switching state |
-| 土 Earth | Green (`--earth`) | Grounded | Stability, success states | Wide, low shadows that root elements into the page |
-| 風 Air | Gold (`--air`) | Formless | The elevated/premium accent | The motion language — fade and rise, ease-out, never bounce |
+This is the v2.0 correction, and it is the most important sentence in this
+file: **an accent is not a job title.** Fire is not "the CTA colour". Earth
+is not "the success colour". The four accents exist to complement two
+neutrals — ink and paper do the heavy lifting, and the accents are there to
+give a page somewhere to go. Lead with earth if earth is what the page wants.
 
-Fire is primary because it matches the real-world logo (`#AA0000`) — the
-system is grounded in an existing mark, not designed in a vacuum.
+What each element still binds is how a thing *moves*:
+
+| Element | Colour | Trait | Motion signature |
+|---|---|---|---|
+| 火 Fire | Red (`--fire`) | Bold | **Strike** — most of the distance covered early, a small overshoot, then it holds |
+| 水 Water | Blue (`--water`) | Fluid | **Flow** — enters off-axis and eases across. No hard start or stop |
+| 土 Earth | Green (`--earth`) | Grounded | **Settle** — arrives from above and lands. Overshoots *downward*; weight, never bounce |
+| 風 Air | Gold (`--air`) | Formless | **Drift** — the lightest, slowest to commit. Seems to arrive from nowhere |
+
+So the binding survives, but it moved: from *what a colour may be used for*
+to *how a thing behaves*. Colour was the wrong place for it. A rule that says
+"only fire may lead" is a rule about hierarchy wearing an elemental costume —
+and hierarchy is a composition problem, solved by contrast and space, not by
+reserving a hue.
+
+All four signatures run on the system's single easing curve. Their characters
+come from keyframe shape, not from four different curves — see
+`foundations.md`. Fire's red does not make it urgent; fire's *timing* does.
+
+Fire remains matched to the real logo (`#AA0000`) — the system is grounded in
+an existing mark, not designed in a vacuum. That is a fact about the brand,
+not a claim on where the colour may appear.
 
 ## Martial and spiritual grounding
 
@@ -64,34 +83,31 @@ root, also let go. That is what mastery of a practice looks like, and
 it's the claim this system is built to make — in work, and in everything
 else the four traits describe.
 
-**But commanding all four does not mean using all four at once.** A
-master bends one element at a time, and is recognised as a master by
-moving cleanly between them. Four elements deployed simultaneously is not
-mastery; it's noise.
+**This is a claim about the practitioner, not a rule about the palette.**
+Until v2.0 it was enforced as one: exactly one accent could lead a screen,
+and all four could only coexist inside a governed "Fourfold". Both rules are
+gone. They were solving a real problem — a page sprinkled with four accents
+for no reason reads as indecision — but solving it in the wrong place.
 
-So the system holds both:
+The honest version of the concern is just: *don't use colour where you
+haven't got a reason.* That's a composition judgment, and it belongs in the
+same category as "don't use six type sizes" — advice a designer applies, not
+a constraint the system enforces. Enforcing it as a colour rule meant the
+system kept saying no to compositions that were perfectly good.
 
-- **One accent leads any given moment.** This is unchanged, and it is
-  still the default everywhere.
-- **The full four appear only as a deliberate composition of peers** —
-  four cells, one element each, equal in size, weight and glow. That
-  composition is a *claim about range*, not a decoration. It is called a
-  **Fourfold**, and `foundations.md` sets the five conditions it has to
-  meet.
-
-The failure mode this rules out is the tempting one: sprinkling all four
-accents across a page because the palette has four colors. That reads as
-indecision, not range. The set works precisely because it is rare, bounded,
+What actually keeps a page disciplined is unchanged and still holds: two
+neutrals carry nearly everything, negative space is a default, and glow is
+emphasis rather than decoration. The set works precisely because it is rare, bounded,
 and everything around it stays disciplined.
 
 ## Restraint rules
 
 - Two neutrals (ink, paper) do the heavy lifting. Color is earned, not
-  default.
-- One accent leads per screen — except inside a Fourfold set, the one
-  sanctioned exception (see the Avatar principle above, and the Fourfold
-  Rule in `foundations.md`). Fire and Air can both glow, but they
-  shouldn't compete for the same moment.
+  default. This is the rule that actually produces the restraint — not the
+  ones about which accent may lead.
+- Use as few accents as the page needs. That is advice, not a constraint:
+  a page with four accents and a reason for each is fine; a page with four
+  accents because the palette has four is not.
 - Sharp corners, not soft ones — precision over softness, closer to a
   shoji screen's rectilinear grid than a rounded glass panel.
 - Glow is emphasis, not decoration. If everything glows, nothing does.

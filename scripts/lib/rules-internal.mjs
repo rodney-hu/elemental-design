@@ -169,6 +169,37 @@ export function runInternalRules(report) {
         }
       }
     }
+
+    /* Text ON a solid accent fill — a case that only became reachable in
+       v2.0, when colour stopped being bound to role. Before that only fire
+       was ever a solid CTA, so nobody had computed the other three, and two
+       of them fail with the obvious choice: --washi is 3.67:1 on --earth and
+       2.09:1 on --air. The `--on-*` tokens record the answer; this recomputes
+       it, so changing an element's triplet cannot quietly break its button. */
+    for (const el of ["fire", "water", "earth", "air"]) {
+      const fill = triplet(el);
+      const m = tokensCss.match(new RegExp(`--on-${el}:\\s*var\\(--([\\w-]+)\\)`));
+      if (!fill) continue;
+      if (!m) {
+        fail(
+          "contrast",
+          `--on-${el} is not defined — every solid accent fill needs a foreground whose contrast has actually been checked`,
+        );
+        continue;
+      }
+      const fg = triplet(m[1]);
+      if (!fg) {
+        fail("contrast", `--on-${el} points at --${m[1]}, which has no channel triplet`);
+        continue;
+      }
+      const r = ratio(fg, fill);
+      if (r < 4.5) {
+        fail(
+          "contrast",
+          `--on-${el} (--${m[1]}) is ${r.toFixed(2)}:1 on --${el} — below the 4.5:1 floor. Text on a filled accent must clear AA`,
+        );
+      }
+    }
   }
 
   /* ---- 5. Alpha caps across the whole glow namespace --------------------- */

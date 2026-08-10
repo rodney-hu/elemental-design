@@ -2,7 +2,66 @@
 
 Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
-## v1.3 — current
+## v2.0 — current
+
+**Colour is free. Motion is bound.**
+
+The elements had been binding **roles**: fire was the CTA colour, earth was
+"grounding, not an attention-getter", one accent had to lead each screen, and
+all four could only coexist inside a governed Fourfold. That was the wrong
+axis. "Only fire may lead" is a rule about *hierarchy* wearing an elemental
+costume, and hierarchy is solved with contrast and space, not by reserving a
+hue.
+
+So the binding moved rather than disappeared:
+
+> An accent is not a job title. Any colour may be used for anything.
+> What an element governs is how a thing **moves**.
+
+**New — element motion signatures.** Shipped as `.motion-fire` / `-water` /
+`-earth` / `-air` and an `elementMotion` export, so the binding is a real
+feature rather than a paragraph:
+
+| Signature | Character | Duration |
+|---|---|---|
+| Strike (fire) | distance covered early, small overshoot, then holds | default |
+| Flow (water) | enters off-axis, eases across, no hard start or stop | slow |
+| Settle (earth) | arrives from above and lands; overshoots *down* | default |
+| Drift (air) | lightest, slowest to commit | slow |
+
+All four run on the single `--ease-air` curve — the characters come from
+keyframe shape, not four beziers. The one-curve rule survives.
+
+**New — `--on-{element}` tokens.** Unbinding colour immediately exposed an
+accessibility trap that the old rule had been hiding: once any accent can be
+a solid fill, three fill/text pairings existed that had never been computed,
+because fire was the only legal solid CTA. Two fail outright — `--washi` is
+**3.67:1 on --earth** and **2.09:1 on --air**. `--void` is correct for both.
+`npm run check` now recomputes all four, so changing an element's triplet
+can't quietly break its button.
+
+**Fixed — the motion demos looked broken.** "Race" fires for 150ms, about
+nine frames; correct as UI, invisible as a demonstration. Demos now loop on a
+timer while playing, with a beat between passes, and each pass still runs at
+its true duration. The easing plot gained a linear reference dot running
+beside it, because the curve's character is only legible by contrast.
+
+**Breaking**
+- `Button` takes `accent` (fire/water/earth/air) x `shape`
+  (solid/outline/quiet). **Migration:** `variant="primary"` -> `accent="fire"`;
+  `variant="air"` -> `accent="air" shape="outline"`; `variant="secondary"` ->
+  `shape="quiet"`. TypeScript flags every call site.
+- The Fourfold Rule's five conditions are retired. `Fourfold` still ships as
+  a four-up layout component; it is no longer a governed exception.
+- "One accent leads per screen", "fire is the only CTA colour" and "earth is
+  not an attention-getter" are all gone from `foundations.md`.
+
+**Kept deliberately:** semantic stays separate from element.
+`--semantic-error` and `--fire` still share a hex and not a variable — error,
+warning and success mean something specific, and unbinding those would make
+red ambiguous.
+
+## v1.3
 
 **Three gaps the portfolio upgrade surfaced.** Upgrading `gtm-portfolio` from
 v0.6 to v1.2 was supposed to be a consumer catching up with the system; it
