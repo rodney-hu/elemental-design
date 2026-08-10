@@ -12,6 +12,9 @@ new color variant" questions are already answered there.
   — sets which element leads the hover morph. `interactive` is **visual only** and
   defaults to `false`; for a genuinely clickable card use `CardLink`, which
   renders an `<a>` and carries the system focus ring.
+  Surface effects are props: `sheen` (light across the panel), `edge` (a
+  gradient border in an element's colour), `fill` (the whole card reads as its
+  element — label and short title only, see `docs/foundations.md`).
 - `CardLink` / `CardButton` — `Card`'s clickable twins. Semantics come from the
   element, not a prop: navigate with one, act with the other.
 - `Input` (with `invalid` / disabled states), `Label`, `ErrorText`

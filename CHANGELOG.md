@@ -2,7 +2,57 @@
 
 Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
-## v1.0 — current
+## v1.2 — current
+
+**Elemental fill — a fifth tier in the glow namespace.** A card that reads as
+its element rather than as a panel catching its light. Prompted by a
+reference image of element-tinted state cards.
+
+| Tier | What it does | Cap |
+|---|---|---|
+| `aura` | tints a background | 0.055 |
+| `halo` | sits behind an object | 0.30 |
+| `sheen` | lies on a surface | 0.05 |
+| `edge` | lies on a 1px border | 0.55 |
+| `fill` | **is** the surface | 0.22 (air 0.18) |
+
+`fill` carries the tightest rule in the system, and it is about content
+rather than alpha: **a label and a short title, never sustained content.**
+Not a contrast failure — `--washi` on the brightest point clears AA — but
+reading distance, the same argument that keeps prose off the void. Use
+`sheen` for a card that holds real content. Available as `<Card fill="fire">`.
+
+**Fixed: the easing-curve demo never played.** It used SVG
+`<animateMotion>`, whose `begin="0s"` is relative to the *document* timeline,
+not to when the element was inserted — so the dot travelled the curve during
+the first 0.7s of page life, before anyone had scrolled to it, and every
+later remount rendered straight to the frozen end state. Changing React's
+`key` cannot fix that. Replaced with CSS `offset-path`, which restarts per
+element and, unlike SMIL, is covered by the reduced-motion guard.
+
+**Fixed: the duration race and stagger appeared not to run.** Same class of
+bug, different mechanism — their animation classes were applied at mount, so
+everything played at page load far above the fold and was finished before
+being seen. Animations now attach on first interaction, making the demos
+genuinely click-to-play. For anything below the fold, "plays on load" and
+"plays never" look identical.
+
+**Not breaking.**
+
+## v1.1
+
+Gradient hairline dividers between sections, scroll-triggered `Reveal`
+(dependency-free IntersectionObserver), the `sheen` and `edge` surface
+effects, and the motion lab: the easing curve plotted from `easeAir`'s own
+control points, the three durations raced, the four element behaviours, and
+entrance stagger.
+
+Reveal hardening in v1.1.1 — `.reveal.reveal-in` wins on specificity rather
+than source order, a zero-area guard (an element that cannot be measured is
+shown, never hidden), and a `@media (scripting: none)` fallback. All three
+guard the same failure: content stuck at opacity 0 with no error anywhere.
+
+## v1.0
 
 **The v0.1 "still to build" list, built.** Each of the four leans on a native
 element, so the browser supplies the behaviour hand-rolled versions

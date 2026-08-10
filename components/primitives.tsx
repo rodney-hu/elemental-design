@@ -104,7 +104,24 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
    * than a reading surface. Defaults to the card's `accent`.
    */
   edge?: CardAccent | false;
+  /**
+   * Make the card read AS its element — a diagonal wash of the element's
+   * colour across the whole surface, not just light caught on it.
+   *
+   * **Only for a card carrying a label and a short title.** A tinted ground
+   * costs contrast, and two or three words can afford that where two or
+   * three paragraphs cannot — the same reasoning that keeps prose off the
+   * void. If the card holds sustained content, use `sheen` instead.
+   */
+  fill?: CardAccent | false;
 }
+
+const cardFill: Record<CardAccent, string> = {
+  fire: "fill-fire",
+  water: "fill-water",
+  earth: "fill-earth",
+  air: "fill-air",
+};
 
 const cardEdge: Record<CardAccent, string> = {
   fire: "edge edge-fire",
@@ -163,6 +180,7 @@ export function Card({
   elevation = "raised",
   sheen = false,
   edge = false,
+  fill = false,
   className,
   ...props
 }: CardProps) {
@@ -172,6 +190,7 @@ export function Card({
         CARD_BASE,
         cardElevation[elevation],
         sheen && "sheen",
+        fill && cardFill[fill],
         edge && cardEdge[edge],
         interactive && cardMorph(accent),
         className,

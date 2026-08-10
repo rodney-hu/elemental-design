@@ -81,18 +81,27 @@ function EasingPlot() {
         <line x1={px(0)} y1={py(0)} x2={px(cx1)} y2={py(cy1)} stroke="var(--fire)" strokeWidth={0.75} opacity={0.5} />
         <line x1={px(1)} y1={py(1)} x2={px(cx2)} y2={py(cy2)} stroke="var(--fire)" strokeWidth={0.75} opacity={0.5} />
 
-        {/* Travelling dot, driven by the real curve via CSS offset-path */}
-        <circle key={replay} r={4} fill="var(--fire-text)">
-          <animateMotion
-            dur={`${durationMs.slow}ms`}
-            fill="freeze"
-            path={path}
-            keyPoints="0;1"
-            keyTimes="0;1"
-            calcMode="spline"
-            keySplines={easeAir.join(" ")}
-          />
-        </circle>
+        {/* Travelling dot.
+            NOT SMIL <animateMotion>. That was the first attempt and it is
+            broken in a way that looks like it works: a SMIL `begin="0s"` is
+            relative to the DOCUMENT timeline, not to when the element was
+            inserted. So the animation runs during the first 0.7s of page
+            life — before anyone has scrolled here — and every later remount
+            renders straight to the frozen end state. The dot simply sat at
+            the end and Replay did nothing.
+
+            CSS offset-path has no such problem (each new element starts its
+            own animation), and unlike SMIL it is covered by the
+            reduced-motion guard in tokens.css, which SMIL silently is not.
+            The path is the same string the visible curve is drawn from, so
+            the dot cannot travel a different line than the one on screen. */}
+        <g
+          key={replay}
+          className={cx("curve-dot", replay > 0 && "curve-dot-run")}
+          style={{ offsetPath: `path("${path}")` } as React.CSSProperties}
+        >
+          <circle r={4} fill="var(--fire-text)" />
+        </g>
       </svg>
 
       <Stack direction="horizontal" gap="md" align="center" wrap>
@@ -133,13 +142,20 @@ function DurationRace() {
               </Text>
             </Stack>
             <div className="relative h-8 bg-sumi rounded border border-line overflow-hidden">
+              {/* `left-1` is the resting position the keyframe starts from,
+                  so the dot sits at the line rather than jumping there on
+                  first play. The animation is only attached after a click —
+                  applied at mount it would run at page load and be finished
+                  before this section is ever on screen. */}
               <div
                 key={`${d.key}-${replay}`}
-                className="race-dot absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded bg-fire shadow-glow-fire-soft"
+                className="race-dot absolute top-1/2 -translate-y-1/2 left-1 w-6 h-6 rounded bg-fire shadow-glow-fire-soft"
                 style={
                   {
                     "--race-ms": `${d.ms}ms`,
-                    animation: `raceAcross ${d.ms}ms var(--ease-air) forwards`,
+                    ...(replay > 0 && {
+                      animation: `raceAcross ${d.ms}ms var(--ease-air) forwards`,
+                    }),
                   } as React.CSSProperties
                 }
               />
@@ -191,6 +207,17 @@ const BEHAVIOURS: Array<{
     behaviour: "Fades and rises. Never bounces, never overshoots",
     demo: "demo-air",
   },
+];
+
+/* State names from the reference that prompted the fill tier. They name what
+   each element DOES rather than what it is, which is the right register for a
+   card whose whole surface is the element — the colour already says which
+   element it is, so the words shouldn't repeat it. */
+const STATES: Array<{ element: Element; state: string }> = [
+  { element: "fire", state: "Ignition" },
+  { element: "water", state: "Flow" },
+  { element: "earth", state: "Density" },
+  { element: "air", state: "Vision" },
 ];
 
 function ElementBehaviours() {
@@ -257,8 +284,8 @@ function EntranceStagger() {
           <div
             key={`${i}-${replay}`}
             className={cx(
-              "rise",
-              `rise-d${i}`,
+              replay > 0 && "rise",
+              replay > 0 && `rise-d${i}`,
               "h-20 bg-sumi-2 border border-line rounded-md flex items-center justify-center",
             )}
           >
@@ -326,6 +353,36 @@ function SurfaceEffects() {
                 <ElementMark element={el} size={22} label={null} />
                 <Eyebrow tone={el}>{el}</Eyebrow>
               </Stack>
+            </Card>
+          ))}
+        </Grid>
+      </Stack>
+
+      {/* The strongest tier. Label + short title only — see the usage rule on
+          --fill-* in tokens.css and the `fill` prop on Card. */}
+      <Stack gap="sm">
+        <Eyebrow>Elemental states — fill</Eyebrow>
+        <Text size="sm" tone="muted" className="max-w-measure">
+          A filled card doesn't catch its element's light, it{" "}
+          <em>is</em> its element. The only tier allowed to change what a
+          surface reads as — so it is limited to a label and a short title,
+          for the same reason prose belongs on a panel rather than the void.
+        </Text>
+        <Grid cols={4} gap="lg">
+          {STATES.map((s) => (
+            <Card
+              key={s.element}
+              fill={s.element}
+              edge={s.element}
+              sheen
+              elevation="none"
+              className="min-h-40 flex flex-col justify-between"
+            >
+              <Stack direction="horizontal" justify="between" align="center">
+                <Eyebrow tone={s.element}>{s.element}</Eyebrow>
+                <ElementMark element={s.element} size={20} label={null} />
+              </Stack>
+              <Heading level={3}>{s.state}</Heading>
             </Card>
           ))}
         </Grid>

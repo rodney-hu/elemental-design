@@ -65,6 +65,54 @@ The general form of the mistake is worth keeping: *a styling prop should not
 confer semantics.* `interactive` describes how something looks on hover; whether
 it can be activated is the element's job.
 
+**The glow namespace grew to five tiers, and the newest one is capped by
+content rather than by alpha.**
+`aura` and `halo` split "tints a background" from "sits behind an object".
+v1.1 added `sheen` (light on a surface) and `edge` (light on a border). v1.2
+adds `fill`: the element's colour washed across the whole card, from a
+reference image of element-tinted state cards.
+
+`fill` is different in kind from the other four. They all catch light on
+something that remains a panel; a filled card stops reading as a panel and
+starts reading as a swatch. That earns it the tightest rule in the system,
+and the rule is about **content, not alpha**: a fill is for a card carrying a
+label and a short title, never one carrying sustained content.
+
+Worth being precise about why, because the obvious reason is wrong. It is not
+a contrast failure — `--washi` on the brightest point of `--fill-fire` clears
+AA comfortably. It is reading *distance*: a tinted ground costs comfort, and
+three words can afford that where three paragraphs cannot. Exactly the
+argument that put prose on a panel instead of the void in v0.6, applied to a
+new surface. A cap that could be expressed as a number would have been easy
+to enforce and would have missed the actual constraint.
+
+**SMIL `begin="0s"` is relative to the document, not to the element.**
+The easing-curve plot used `<animateMotion>`, and it looked correct in every
+way except that it never played. The cause is worth recording because the API
+gives no hint of it: a SMIL `begin` is measured from the SVG document
+timeline, which starts at page load. So the dot travelled the curve during
+the first 0.7 seconds of the page's life — before anyone had scrolled to that
+section — and every later remount rendered straight to the frozen end state.
+React's usual restart trick, changing the `key`, does nothing, because the new
+element still resolves `begin="0s"` against the same document timeline.
+
+Replaced with CSS `offset-path` + `offset-distance`, which restarts per
+element and — unlike SMIL — is covered by the `prefers-reduced-motion` guard
+in tokens.css. SMIL escapes that guard entirely, which is a second, quieter
+reason not to use it here.
+
+**A demo that autoplays on mount has already finished by the time it is
+seen.** Same class of bug, different mechanism, found immediately after. The
+duration race and the entrance stagger applied their animation classes at
+mount, so all of it ran at page load, thousands of pixels above where the
+reader would eventually be. Scrolling down showed three dots sitting at the
+finish line and a stagger already landed — indistinguishable from "the
+animations are broken", which is precisely how it was reported.
+
+The animation classes are now attached on first interaction rather than at
+mount, so the demos are genuinely click-to-play. General form: **for anything
+below the fold, "plays on load" and "plays never" look the same.**
+
 **The corner aura had been widening the page since v0.4.**
 Found the first time the showcase was viewed on a real deployment at a narrow
 width. `.aura-r::before` is pushed ~45% off the section's right edge by design

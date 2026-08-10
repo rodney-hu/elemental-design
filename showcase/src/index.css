@@ -43,6 +43,33 @@ body {
   }
 }
 
+/* The dot travelling the easing curve. Driven by offset-path so it follows
+   the exact bezier the plot draws, and so the reduced-motion guard applies
+   to it (SMIL would have escaped that guard entirely). */
+@keyframes travelCurve {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+/* Idle by default, at the start of the curve. The animation is a SEPARATE
+   class added on the first Replay, because a CSS animation applied at mount
+   runs at page load — long before anyone has scrolled to this section — so
+   the demo was always already finished by the time it was looked at. That
+   reads exactly like "the animation is broken". Demos here are click-to-play
+   (the "balanced" intensity choice), and this makes that literally true. */
+.curve-dot {
+  offset-rotate: 0deg;
+  offset-distance: 0%;
+}
+
+.curve-dot-run {
+  animation: travelCurve var(--duration-slow) var(--ease-air) forwards;
+}
+
 /* 火 FIRE — the strike. Fast, committed, then it glows. */
 @keyframes demoFire {
   0% {
@@ -180,5 +207,9 @@ body {
      drift from the durationMs constants driving the demo. */
   .motion-preview .race-dot {
     animation-duration: var(--race-ms) !important;
+  }
+
+  .motion-preview .curve-dot-run {
+    animation: travelCurve var(--duration-slow) var(--ease-air) forwards !important;
   }
 }

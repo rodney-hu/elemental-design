@@ -143,6 +143,40 @@ canonical order for you.
   own section rhythm as an arbitrary `py-24`. `Section` applies `4xl` by
   default — prefer it to hand-spacing a `<section>`.
 
+### The glow namespace — five tiers, budgeted by coverage
+
+Every way this system emits colour has a name and a numeric cap, and the cap
+tracks how much of the reader's field of view the effect covers. Without
+named budgets, "just a subtle gradient" is how the banned full-page wash
+returns one component at a time.
+
+| Tier | What it does | Cap |
+|---|---|---|
+| `aura` | tints a **background** | 0.055 (0.085 hero) |
+| `halo` | sits **behind** an object | 0.30 (air 0.24) |
+| `sheen` | lies **on** a surface | 0.05 |
+| `edge` | lies **on** a 1px border | 0.55 (air 0.45) |
+| `fill` | **is** the surface | 0.22 (air 0.18) |
+
+`npm run check` fails if any token drifts above its cap — for gradients it
+measures the brightest stop.
+
+**The fill rule.** A filled card is not a panel that happens to be tinted;
+it's a swatch with a label on it. So:
+
+> A fill is for a card carrying a **label and a short title**.
+> Never a card carrying sustained content.
+
+The constraint is about content, not contrast — `--washi` on the brightest
+point of `--fill-fire` still clears AA. It's reading *distance* that fails: a
+tinted ground costs comfort, and three words can afford that where three
+paragraphs cannot. Same reasoning that keeps prose off the void. If the card
+holds real content, use `sheen`.
+
+Never put a `glow` and `shadow-root-earth` on the same object, and never
+stack `fill` with a competing accent — a filled card has already chosen its
+element.
+
 ### Shadow — glow vs. weight
 
 Two shadow families, and they mean opposite things:
