@@ -266,7 +266,7 @@
        halo   sits BEHIND an object         ≤ 0.30
        sheen  lies ON an object's SURFACE   ≤ 0.05
        edge   lies ON an object's BORDER    ≤ 0.55
-       fill   IS the object's surface       ≤ 0.22  (air 0.18)
+       wash   IS the object's surface       ≤ 0.22  (air 0.18)
 
      Why sheen is capped so much lower than edge: a sheen covers the whole
      panel, so it competes with the content sitting on it, and v0.6 decided
@@ -331,31 +331,31 @@
      The reasoning is the same one that decided prose belongs on a panel and
      not on the void: a tinted ground costs contrast, and two or three words
      can afford that where two or three paragraphs cannot. --washi on the
-     brightest point of --fill-fire still clears AA comfortably; it is the
+     brightest point of --wash-fire still clears AA comfortably; it is the
      reading distance, not the ratio, that fails.
 
      Diagonal rather than top-down, and dying at 60%, so the far corner stays
      near-black and the card still reads as an object on the void rather than
      as a solid colour block. */
-  --fill-fire: linear-gradient(
+  --wash-fire: linear-gradient(
     135deg,
     rgb(var(--fire-rgb) / 0.22) 0%,
     rgb(var(--fire-rgb) / 0.06) 60%,
     transparent 100%
   );
-  --fill-water: linear-gradient(
+  --wash-water: linear-gradient(
     135deg,
     rgb(var(--water-rgb) / 0.22) 0%,
     rgb(var(--water-rgb) / 0.06) 60%,
     transparent 100%
   );
-  --fill-earth: linear-gradient(
+  --wash-earth: linear-gradient(
     135deg,
     rgb(var(--earth-rgb) / 0.22) 0%,
     rgb(var(--earth-rgb) / 0.06) 60%,
     transparent 100%
   );
-  --fill-air: linear-gradient(
+  --wash-air: linear-gradient(
     135deg,
     rgb(var(--air-rgb) / 0.18) 0%,
     rgb(var(--air-rgb) / 0.05) 60%,
@@ -573,36 +573,36 @@
    is a real surface rather than transparency onto the void. Combine with
    `.sheen` by listing both gradients — the sheen goes first so its light
    sits on top of the colour, which is how light actually works. */
-.fill-fire {
-  background-image: var(--fill-fire);
+.wash-fire {
+  background-image: var(--wash-fire);
 }
 
-.fill-water {
-  background-image: var(--fill-water);
+.wash-water {
+  background-image: var(--wash-water);
 }
 
-.fill-earth {
-  background-image: var(--fill-earth);
+.wash-earth {
+  background-image: var(--wash-earth);
 }
 
-.fill-air {
-  background-image: var(--fill-air);
+.wash-air {
+  background-image: var(--wash-air);
 }
 
-.sheen.fill-fire {
-  background-image: var(--sheen), var(--fill-fire);
+.sheen.wash-fire {
+  background-image: var(--sheen), var(--wash-fire);
 }
 
-.sheen.fill-water {
-  background-image: var(--sheen), var(--fill-water);
+.sheen.wash-water {
+  background-image: var(--sheen), var(--wash-water);
 }
 
-.sheen.fill-earth {
-  background-image: var(--sheen), var(--fill-earth);
+.sheen.wash-earth {
+  background-image: var(--sheen), var(--wash-earth);
 }
 
-.sheen.fill-air {
-  background-image: var(--sheen), var(--fill-air);
+.sheen.wash-air {
+  background-image: var(--sheen), var(--wash-air);
 }
 
 /* .edge draws a gradient BORDER. The two-gradient / two-clip trick is the

@@ -69,17 +69,17 @@ it can be activated is the element's job.
 content rather than by alpha.**
 `aura` and `halo` split "tints a background" from "sits behind an object".
 v1.1 added `sheen` (light on a surface) and `edge` (light on a border). v1.2
-adds `fill`: the element's colour washed across the whole card, from a
+adds `wash`: the element's colour washed across the whole card, from a
 reference image of element-tinted state cards.
 
-`fill` is different in kind from the other four. They all catch light on
-something that remains a panel; a filled card stops reading as a panel and
+`wash` is different in kind from the other four. They all catch light on
+something that remains a panel; a washed card stops reading as a panel and
 starts reading as a swatch. That earns it the tightest rule in the system,
-and the rule is about **content, not alpha**: a fill is for a card carrying a
+and the rule is about **content, not alpha**: a wash is for a card carrying a
 label and a short title, never one carrying sustained content.
 
 Worth being precise about why, because the obvious reason is wrong. It is not
-a contrast failure — `--washi` on the brightest point of `--fill-fire` clears
+a contrast failure — `--washi` on the brightest point of `--wash-fire` clears
 AA comfortably. It is reading *distance*: a tinted ground costs comfort, and
 three words can afford that where three paragraphs cannot. Exactly the
 argument that put prose on a panel instead of the void in v0.6, applied to a

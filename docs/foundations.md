@@ -156,25 +156,25 @@ returns one component at a time.
 | `halo` | sits **behind** an object | 0.30 (air 0.24) |
 | `sheen` | lies **on** a surface | 0.05 |
 | `edge` | lies **on** a 1px border | 0.55 (air 0.45) |
-| `fill` | **is** the surface | 0.22 (air 0.18) |
+| `wash` | **is** the surface | 0.22 (air 0.18) |
 
 `npm run check` fails if any token drifts above its cap — for gradients it
 measures the brightest stop.
 
-**The fill rule.** A filled card is not a panel that happens to be tinted;
+**The wash rule.** A washed card is not a panel that happens to be tinted;
 it's a swatch with a label on it. So:
 
-> A fill is for a card carrying a **label and a short title**.
+> A wash is for a card carrying a **label and a short title**.
 > Never a card carrying sustained content.
 
 The constraint is about content, not contrast — `--washi` on the brightest
-point of `--fill-fire` still clears AA. It's reading *distance* that fails: a
+point of `--wash-fire` still clears AA. It's reading *distance* that fails: a
 tinted ground costs comfort, and three words can afford that where three
 paragraphs cannot. Same reasoning that keeps prose off the void. If the card
 holds real content, use `sheen`.
 
 Never put a `glow` and `shadow-root-earth` on the same object, and never
-stack `fill` with a competing accent — a filled card has already chosen its
+stack `wash` with a competing accent — a washed card has already chosen its
 element.
 
 ### Shadow — glow vs. weight

@@ -4,7 +4,7 @@ Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
 ## v1.2 — current
 
-**Elemental fill — a fifth tier in the glow namespace.** A card that reads as
+**Elemental wash — a fifth tier in the glow namespace.** A card that reads as
 its element rather than as a panel catching its light. Prompted by a
 reference image of element-tinted state cards.
 
@@ -14,13 +14,13 @@ reference image of element-tinted state cards.
 | `halo` | sits behind an object | 0.30 |
 | `sheen` | lies on a surface | 0.05 |
 | `edge` | lies on a 1px border | 0.55 |
-| `fill` | **is** the surface | 0.22 (air 0.18) |
+| `wash` | **is** the surface | 0.22 (air 0.18) |
 
-`fill` carries the tightest rule in the system, and it is about content
+`wash` carries the tightest rule in the system, and it is about content
 rather than alpha: **a label and a short title, never sustained content.**
 Not a contrast failure — `--washi` on the brightest point clears AA — but
 reading distance, the same argument that keeps prose off the void. Use
-`sheen` for a card that holds real content. Available as `<Card fill="fire">`.
+`sheen` for a card that holds real content. Available as `<Card wash="fire">`.
 
 **Fixed: the easing-curve demo never played.** It used SVG
 `<animateMotion>`, whose `begin="0s"` is relative to the *document* timeline,
@@ -37,7 +37,15 @@ being seen. Animations now attach on first interaction, making the demos
 genuinely click-to-play. For anything below the fold, "plays on load" and
 "plays never" look identical.
 
-**Not breaking.**
+**Renamed before anyone could use it.** The tier shipped in v1.2.0 as `fill`,
+which collides with Tailwind's own `fill-{color}` utilities for the SVG `fill`
+property — so `.fill-fire` was emitted twice with different meanings, and a
+`<Card fill>` would also have set `fill` on every SVG child that hadn't
+declared its own. Renamed to `wash` in v1.2.1, ~10 minutes later. Strictly a
+prop rename (major, by this project's own policy) but v1.2.0 had no consumers;
+recorded here rather than quietly amended.
+
+**Not otherwise breaking.**
 
 ## v1.1
 

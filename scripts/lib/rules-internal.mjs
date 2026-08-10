@@ -178,7 +178,7 @@ export function runInternalRules(report) {
        halo   sits BEHIND an object       ≤ 0.30  (air 0.24)
        sheen  lies ON a surface           ≤ 0.05
        edge   lies ON a 1px border        ≤ 0.55  (air 0.45)
-       fill   IS the surface              ≤ 0.22  (air 0.18)
+       wash   IS the surface              ≤ 0.22  (air 0.18)
      Without a numeric guard these are prose, and prose is how "just a subtle
      gradient" reintroduces the banned full-page wash one component at a
      time. */
@@ -211,10 +211,10 @@ export function runInternalRules(report) {
       "edge-water": 0.55,
       "edge-earth": 0.55,
       "edge-air": 0.45,
-      "fill-fire": 0.22,
-      "fill-water": 0.22,
-      "fill-earth": 0.22,
-      "fill-air": 0.18,
+      "wash-fire": 0.22,
+      "wash-water": 0.22,
+      "wash-earth": 0.22,
+      "wash-air": 0.18,
       "divider-fire": 0.2,
     };
 

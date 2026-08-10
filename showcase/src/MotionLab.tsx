@@ -359,7 +359,7 @@ function SurfaceEffects() {
       </Stack>
 
       {/* The strongest tier. Label + short title only — see the usage rule on
-          --fill-* in tokens.css and the `fill` prop on Card. */}
+          --wash-* in tokens.css and the `wash` prop on Card. */}
       <Stack gap="sm">
         <Eyebrow>Elemental states — fill</Eyebrow>
         <Text size="sm" tone="muted" className="max-w-measure">
@@ -372,7 +372,7 @@ function SurfaceEffects() {
           {STATES.map((s) => (
             <Card
               key={s.element}
-              fill={s.element}
+              wash={s.element}
               edge={s.element}
               sheen
               elevation="none"

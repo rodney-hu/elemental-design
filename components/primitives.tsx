@@ -109,18 +109,23 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
    * colour across the whole surface, not just light caught on it.
    *
    * **Only for a card carrying a label and a short title.** A tinted ground
-   * costs contrast, and two or three words can afford that where two or
-   * three paragraphs cannot — the same reasoning that keeps prose off the
+   * costs reading comfort, and two or three words can afford that where two
+   * or three paragraphs cannot — the same reasoning that keeps prose off the
    * void. If the card holds sustained content, use `sheen` instead.
+   *
+   * Named `wash`, not `fill`: Tailwind already generates `fill-{color}`
+   * utilities for the SVG `fill` property, so a `.fill-fire` class would
+   * collide with one of its own and quietly set `fill` on every SVG child
+   * that hadn't declared its own.
    */
-  fill?: CardAccent | false;
+  wash?: CardAccent | false;
 }
 
-const cardFill: Record<CardAccent, string> = {
-  fire: "fill-fire",
-  water: "fill-water",
-  earth: "fill-earth",
-  air: "fill-air",
+const cardWash: Record<CardAccent, string> = {
+  fire: "wash-fire",
+  water: "wash-water",
+  earth: "wash-earth",
+  air: "wash-air",
 };
 
 const cardEdge: Record<CardAccent, string> = {
@@ -180,7 +185,7 @@ export function Card({
   elevation = "raised",
   sheen = false,
   edge = false,
-  fill = false,
+  wash = false,
   className,
   ...props
 }: CardProps) {
@@ -190,7 +195,7 @@ export function Card({
         CARD_BASE,
         cardElevation[elevation],
         sheen && "sheen",
-        fill && cardFill[fill],
+        wash && cardWash[wash],
         edge && cardEdge[edge],
         interactive && cardMorph(accent),
         className,
