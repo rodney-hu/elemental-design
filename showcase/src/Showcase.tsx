@@ -22,6 +22,7 @@ import {
   Badge,
   Status,
   CompareRow,
+  cn,
 } from "elemental-design/primitives";
 import {
   Heading,
@@ -696,6 +697,62 @@ export function Showcase() {
             </Stack>
 
             <MotionLab />
+          </Stack>
+        </Container>
+      </Chapter>
+
+      {/* -------------------------------- Remix ------------------------------- */}
+      {/* v2.1 — proof the alias/containment layer actually works, not just a
+          claim in docs/remixing.md. Every class in the card below is copy-
+          pasted shadcn vocabulary: bg-card, text-card-foreground,
+          text-muted-foreground, rounded-2xl, duration-300, ease-out,
+          bg-primary, text-primary-foreground, and Button's variant/size
+          compat props — none of it rewritten to bg-sumi-2/text-washi/
+          rounded-lg/duration/ease-air by hand. It renders correctly because
+          the preset (tokens/tailwind-preset.cjs) aliases and CONTAINS those
+          names onto the real scale, not because this file happens to use
+          the "right" ones. `cn()` (not `cx`) is what lets the pasted
+          className win over the card's own base padding. */}
+      <Chapter aura="r">
+        <Container size="lg">
+          <Stack gap="xl">
+            <Stack gap="sm">
+              <Eyebrow>Remix</Eyebrow>
+              <Heading level={2}>Paste it in — it already lands here</Heading>
+              <Text size="sm" tone="muted" className="max-w-measure">
+                Everything in this card is unedited shadcn-dialect: no{" "}
+                <code className="font-mono">bg-sumi-2</code>, no{" "}
+                <code className="font-mono">rounded-lg</code>, no{" "}
+                <code className="font-mono">accent</code>/<code className="font-mono">shape</code>{" "}
+                props. See{" "}
+                <Link href="#" tone="fire">
+                  docs/remixing.md
+                </Link>
+                .
+              </Text>
+            </Stack>
+
+            <div
+              className={cn(
+                "bg-card text-card-foreground border border-border rounded-2xl p-8 shadow-xl transition-all duration-300 ease-out hover:bg-accent max-w-container-sm",
+              )}
+            >
+              <p className="text-muted-foreground text-sm">Starter</p>
+              <Heading level={4} as="h3">
+                Free
+              </Heading>
+              <Text size="sm" tone="muted" className="mt-2">
+                Unlimited projects, one accent, zero rewrites.
+              </Text>
+              <Stack direction="horizontal" gap="sm" className="mt-6">
+                <Button variant="default" size="lg">
+                  Get started
+                </Button>
+                <Button variant="destructive" size="lg">
+                  Delete account
+                </Button>
+              </Stack>
+            </div>
           </Stack>
         </Container>
       </Chapter>

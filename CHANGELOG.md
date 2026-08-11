@@ -2,7 +2,80 @@
 
 Terse version list. Reasoning for each change lives in `docs/decisions.md`.
 
-## v2.0 — current
+## v2.1 — current
+
+**The remix layer — paste something from 21st.dev and it lands on the
+system, not beside it.**
+
+A component copied from anywhere shadcn-shaped (21st.dev included) used to
+need a rewrite pass before it would render, let alone pass `genso-check` —
+the token vocabulary didn't overlap, the structural defaults (soft radii,
+extra durations, a second easing curve) were exactly what the checker bans,
+and the component API disagreed (`variant`/`size` vs. `accent`/`shape`).
+None of that was a foundations problem; it was a missing translation layer.
+See `docs/remixing.md` for the full workflow, `docs/decisions.md` for why
+it's shaped this way.
+
+**New — the preset alias + containment layer.** `tokens/tailwind-preset.cjs`
+now aliases shadcn's semantic color names onto Genso tokens (`bg-background`
+→ `bg-void`, `text-muted-foreground` → `text-washi-dim`, `bg-primary` →
+`bg-fire`, `bg-destructive` → `bg-error`, …) and, more aggressively,
+**contains** Tailwind's own scale keys a shadcn block assumes:
+`rounded-xl/2xl/3xl` now resolve to the sharp radius scale, `duration-N`
+(75 through 1000) to the nearest of the three real durations, and
+`ease-out`/`ease-in`/`ease-in-out` to `--ease-air`. A pasted block doesn't
+just stop failing — it silently lands on the sanctioned scale.
+
+**New — `cn()`.** A second export alongside `cx()`, in
+`elemental-design/primitives`: `cn` runs through `tailwind-merge`, so a
+pasted `cn(base, className)` pattern actually resolves Tailwind class
+conflicts (`className="p-8"` wins over a colliding base `p-6`) instead of
+both classes existing and cascade order deciding. `cx` is unchanged and
+stays the internal, dependency-free composition for this package's own
+components.
+
+**New — `Button` compatibility props.** `variant` (shadcn's
+`default`/`destructive`/`outline`/`secondary`/`ghost`/`link`) and `size`
+(`default`/`sm`/`lg`/`icon`) are now accepted alongside the canonical
+`accent`/`shape`, mapped onto them internally. `variant="destructive"`
+renders with `--semantic-error` directly rather than a fifth "element" —
+destructive is semantic, not elemental. `accent`/`shape` remain the
+documented API for new code; `variant`/`size` are a compatibility shim for
+pasted code.
+
+**New — `genso-check --translate <file> [--write]`.** Rewrites the
+mechanical subset of what the preset's aliasing doesn't already cover:
+`rounded-[…]`/`duration-[…]`/`ease-[cubic-bezier(...)]` arbitrary values,
+`text-[…px]` below the display range, `max-w-[…]`, and any remaining
+shadcn color names — so a pasted file's *source* reads in Genso's own
+vocabulary, not just resolves correctly. Prints a diff by default. Leaves
+raw Tailwind palette colors (`bg-white/5`, `text-gray-400`) alone — no
+single principled mapping exists, and a wrong guess is worse than no fix.
+
+**New — `genso-allow-file: <reason>`.** A second, louder form of the
+existing `genso-allow: <rule> — <reason>` escape hatch. One comment,
+anywhere in the file, suppresses every rule for that file — for previewing
+a freshly pasted block before deciding what to keep, without commenting
+every tripped rule individually. The per-line form is unchanged and stays
+the right tool for integrated code.
+
+**New — icons.** `lucide-react` is allowed unconstrained; the mark drawing
+rules in `foundations.md` govern Genso's own element marks
+(`components/marks.tsx`), not every icon in a pasted block.
+
+**Documented, not changed — per-project theming.** The token architecture
+already supported re-theming an element by overriding its two
+hand-authored triplets (`--{element}-rgb`, `--{element}-text-rgb`) under a
+`[data-theme]` selector; every derived value follows automatically. Written
+up in `docs/foundations.md` for the first time — no code changed.
+
+**Unaffected:** `genso-check`'s own rules are narrowed, not loosened,
+against this package's real source — `unsanctioned-duration`,
+`second-easing`, and `soft-radius` now flag only the arbitrary-bracket
+forms the preset can't contain, and `npm run check` still passes at zero
+findings.
+
+## v2.0
 
 **Colour is free. Motion is bound.**
 

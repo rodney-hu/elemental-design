@@ -88,12 +88,26 @@ export function stripComments(src) {
  *   · it requires a reason, so the next reader knows whether it still holds
  *   · it applies to THAT LINE and the one after, not the rest of the file
  *
+ * v2.1 adds one companion form for a different situation: `genso-allow-file:
+ * <reason>`, anywhere in the file, suppresses every rule for that whole
+ * file. This is deliberately a SEPARATE, more visible incantation rather
+ * than a wildcard rule name on the line form — the per-line form staying
+ * narrow is the point, and a file that's wholesale-exempt should say so
+ * loudly. The intended use is a pasted external block mid-remix: get it
+ * rendering, then narrow the exemption down to per-line `genso-allow`s (or
+ * remove it) as the block gets integrated — see docs/remixing.md. Like the
+ * line form, it still requires a reason.
+ *
  * Must be parsed BEFORE stripComments, since it lives in a comment.
  */
 export function collectAllowances(rawSrc) {
   /** Map<lineNumber, Set<ruleName>> */
   const allowed = new Map();
   const lines = rawSrc.split("\n");
+
+  if (/genso-allow-file:\s*\S/.test(rawSrc)) {
+    allowed.fileWide = true;
+  }
 
   const grant = (line, rule) => {
     if (!allowed.has(line)) allowed.set(line, new Set());

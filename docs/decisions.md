@@ -6,6 +6,123 @@ nobody (including future-you) has to re-derive it from scratch.
 
 ---
 
+**The showcase's content globs were resolving against the wrong
+directory, silently.** *(v2.1)*
+
+Caught while verifying the remix layer: the new "Remix" showcase section
+used `bg-card`, `rounded-2xl`, `shadow-xl` and a few other classes typed
+only in `Showcase.tsx` — not duplicated anywhere in `components/`/`layout/`
+— and none of them rendered. Every existing showcase class had always been
+*also* used somewhere inside `components/`/`layout/`, covered by
+`genso.content`'s absolute globs, so this had never been visible before.
+
+`showcase/tailwind.config.cjs`'s own `"./src/**/*.{js,ts,jsx,tsx}"` is
+resolved by Tailwind against `process.cwd()`, not against the config
+file's directory. `npm run dev` runs from the package root, but the config
+lives one level down in `showcase/` — so that glob was silently resolving
+to `<repo-root>/src/**`, which doesn't exist, and generating nothing for
+it. No error, because a Tailwind content glob matching zero files isn't a
+failure state; it's indistinguishable from "this project simply has no
+matching source yet."
+
+Fixed by building the two showcase-local globs from `__dirname`
+(`showcase/tailwind.config.cjs`), the same technique the package's own
+preset already uses for `genso.content` and for the identical reason. This
+is **specific to this repo's nested `showcase/` layout** — a real
+consuming project's config lives at its own root, which already equals its
+own cwd, so the plain relative form in `README.md` stays correct there and
+shouldn't be "fixed" to match.
+
+---
+
+**The remix layer — containment, not just aliasing.** *(v2.1)*
+
+The friction pasting a 21st.dev/shadcn-shaped component into this system was
+never a foundations gap. It was that Genso has no vocabulary overlap with
+shadcn at all: `bg-background`, `rounded-2xl`, `duration-300`, `ease-out`,
+`cn(...)`, `<Button variant="default">` all resolve to nothing or to a
+banned value, so every paste needed a manual rewrite pass before it would
+even render, let alone pass `genso-check`.
+
+The fix considered and rejected first: alias the shadcn *names* onto Genso
+tokens and stop there (`background` → `--void-rgb`, etc.) — cheap, and
+covers the color half. It doesn't cover the other half: `rounded-2xl`,
+`duration-300` and `ease-out` aren't color names, they're **Tailwind's own
+scale keys**, and a name-only alias leaves them free to keep generating
+their own values (12px+ radii, a fourth/fifth duration, a second easing
+curve) right alongside the sanctioned scale. That's the exact drift this
+system's rules exist to prevent, reintroduced through a side door.
+
+So the preset does two things, not one: alias the shadcn *names*
+(`tokens/tailwind-preset.cjs`, additive — nothing existing renamed), and
+**contain** Tailwind's own `xl`/`2xl`/`3xl` radius keys, `duration-N` keys,
+and `ease-out`/`in`/`in-out` keys by overriding them to resolve to the real
+scale. A pasted `rounded-2xl` doesn't just stop failing — it silently
+becomes `rounded-lg`. This is more aggressive than a typical compatibility
+shim (it changes what a *standard* Tailwind class resolves to, everywhere,
+for every consumer of the preset), and that's the deliberate trade: this
+system's whole bet is that a project takes it as-is rather than picking
+tokens à la carte, so containment errs toward the pasted block rendering
+correctly by default.
+
+**Corollary:** `genso-check`'s `unsanctioned-duration`, `second-easing`, and
+`soft-radius` rules no longer flag the named forms (`duration-300`,
+`ease-out`, `rounded-2xl`) — the preset already makes them safe. They still
+flag the arbitrary-bracket forms (`duration-[220ms]`, `rounded-[10px]`,
+`ease-[cubic-bezier(...)]`), which bypass the preset's scale entirely and
+remain the genuinely open-ended case.
+
+**`cn()` alongside `cx()`, not replacing it.** Shadcn's `cn()` is
+Tailwind-conflict-aware (`tailwind-merge`): a passed `className="p-8"`
+overrides a base `p-6` instead of both existing and cascade order deciding.
+Genso's existing `cx()` is a plain filter+join with no such resolution —
+fine for this package's own components, where every class list is authored
+once and never needs to win a conflict, but wrong for a component built to
+accept an arbitrary external `className` and have it actually take effect
+(the direct ask behind "flexibility to add effects/backgrounds/gradients
+anytime"). Exporting `cn` as a second function rather than changing `cx`
+keeps the internal composition free of the extra dependency and behavior
+change; `cn` is the one to reach for on anything meant to accept a
+conflict-winning external className.
+
+**Icons: `lucide-react` allowed unconstrained, not wrapped.** The mark
+drawing rules (1.5 stroke, butt caps, miter joins, no fills) describe
+Genso's *own* element marks (`components/marks.tsx`) — brand marks, not a
+claim on every icon in every pasted block. A wrapper forcing lucide's 2px
+round-cap icons into that language was considered and rejected: it adds a
+peer dependency and a translation layer for a purely cosmetic mismatch that
+doesn't touch tokens, motion, or any rule with an incident behind it. Left
+alone; `genso-allow`/`genso-allow-file` cover it if a specific icon usage
+ever needs to duck a rule.
+
+**`genso-allow-file` — a second, louder escape hatch.** The existing
+per-line `genso-allow: <rule> — <reason>` stays exactly as narrow as it was
+(one rule, one line, a required reason) — that's still correct for
+integrated code. But a freshly pasted block being previewed before
+integration can trip a dozen rules across the file, and per-line comments
+on all of them is friction that gets the whole file `genso-allow`'d rule by
+rule anyway, just noisily. `genso-allow-file: <reason>` anywhere in the
+file suppresses every rule for that file — deliberately a different,
+more visible incantation (not a wildcard rule name on the per-line form),
+so a wholesale exemption has to say so loudly rather than accumulate
+silently. Intended lifecycle: paste → `genso-allow-file` → get it
+rendering → narrow down to per-line `genso-allow`s (or remove the comment
+entirely) as the block gets integrated. See `docs/remixing.md`.
+
+**Theming was already there — it just wasn't written down.** Every derived
+color (`-text`/`-soft`/`-glow`/`wash`/`edge`/`halo`/`on-*`) already resolves
+from `rgb(var(--x-rgb) / alpha)` in `tokens.css`, so a client project can
+re-theme an element by overriding its two *hand-authored* triplets
+(`--{element}-rgb`, `--{element}-text-rgb`) under a `[data-theme]` selector
+— everything else follows automatically. No architecture change was needed,
+only `docs/foundations.md` catching up to what the token system already
+supports. The one thing that doesn't auto-follow: `--on-{element}` (which
+neutral is legible on the new solid fill) is a contrast-computed pairing,
+not a derived one, and has to be rechecked by hand against the same 4.5:1
+floor `--on-fire/water/earth/air` were computed against.
+
+---
+
 **Colour is free. Motion is bound.** *(v2.0 — supersedes the Avatar
 principle's enforcement, the Fourfold Rule, and "one accent leads per
 screen".)*

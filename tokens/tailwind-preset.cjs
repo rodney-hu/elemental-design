@@ -38,6 +38,27 @@
  *
  * Usage: bg-fire, text-fire-text, shadow-glow-fire, bg-water-soft,
  * border-line, text-washi-dim, rounded (default = sharp), etc.
+ *
+ * — Remix compatibility layer (v2.1) —
+ * A block copied from 21st.dev (or anywhere shadcn-shaped) arrives in a
+ * different vocabulary: `bg-background`, `text-muted-foreground`,
+ * `rounded-2xl`, `duration-300`, `ease-out`. None of that has any Genso
+ * equivalent, so it either renders as literally nothing (an undefined
+ * Tailwind color compiles to no utility) or renders with the wrong shape.
+ *
+ * Below, two things happen instead of a rename:
+ *   1. shadcn's semantic color names are ALIASED to Genso tokens (additive
+ *      — nothing existing is renamed), so `bg-background` just IS `bg-void`.
+ *   2. Tailwind's own scale keys that shadcn code assumes (`rounded-2xl`,
+ *      `duration-300`, `ease-out`) are CONTAINED — pointed at a sanctioned
+ *      Genso value instead of Tailwind's own soft-radius/extra-duration
+ *      defaults. A pasted block doesn't just resolve, it resolves onto the
+ *      system's own scale.
+ *
+ * See docs/remixing.md for the paste → translate → integrate workflow this
+ * exists for, and docs/decisions.md for why containment (not just alias) was
+ * the right shape — a name-only alias still lets a foreign VALUE (a 16px
+ * radius, a fourth duration) exist unrestrained beside the real scale.
  */
 
 const path = require("node:path");
@@ -91,6 +112,34 @@ module.exports = {
         "water-soft": "var(--water-soft)",
         "earth-soft": "var(--earth-soft)",
         "air-soft": "var(--air-soft)",
+
+        // — shadcn-name aliases — additive, see the file header. `accent`
+        // picks water rather than staying undefined: v2.0 already holds that
+        // any element may lead, so a real (if arbitrary) choice beats a
+        // pasted block silently losing its accent color. `secondary` points
+        // at the raised panel tier — the closest thing Genso has to a
+        // secondary button surface (Button's own `shape="quiet"` remains the
+        // canonical way to ask for that look; see the compat props in
+        // components/primitives.tsx).
+        background: "rgb(var(--void-rgb) / <alpha-value>)",
+        foreground: "rgb(var(--washi-rgb) / <alpha-value>)",
+        card: "rgb(var(--sumi-2-rgb) / <alpha-value>)",
+        "card-foreground": "rgb(var(--washi-rgb) / <alpha-value>)",
+        popover: "rgb(var(--sumi-2-rgb) / <alpha-value>)",
+        "popover-foreground": "rgb(var(--washi-rgb) / <alpha-value>)",
+        muted: "rgb(var(--sumi-rgb) / <alpha-value>)",
+        "muted-foreground": "rgb(var(--washi-dim-rgb) / <alpha-value>)",
+        border: "var(--line)",
+        input: "var(--line-strong)",
+        ring: "rgb(var(--fire-rgb) / <alpha-value>)",
+        primary: "rgb(var(--fire-rgb) / <alpha-value>)",
+        "primary-foreground": "var(--on-fire)",
+        secondary: "rgb(var(--sumi-2-rgb) / <alpha-value>)",
+        "secondary-foreground": "rgb(var(--washi-rgb) / <alpha-value>)",
+        accent: "rgb(var(--water-rgb) / <alpha-value>)",
+        "accent-foreground": "var(--on-water)",
+        destructive: "rgb(var(--semantic-error-rgb) / <alpha-value>)",
+        "destructive-foreground": "rgb(var(--washi-rgb) / <alpha-value>)",
       },
 
       fontFamily: {
@@ -150,6 +199,16 @@ module.exports = {
         DEFAULT: "var(--radius-sm)",
         md: "var(--radius-md)",
         lg: "var(--radius-lg)",
+        // Containment, not alias: Tailwind's own xl/2xl/3xl are 12/16/24px —
+        // exactly the soft glassmorphic rounding foundations.md bans. Rather
+        // than leave a pasted `rounded-2xl` producing a banned radius, point
+        // all three at the largest sanctioned step. genso-check's
+        // `soft-radius` rule no longer flags the named form as of v2.1 (see
+        // rules-usage.mjs) — only `rounded-[…]` arbitrary values remain
+        // genuinely open-ended and still get flagged.
+        xl: "var(--radius-lg)",
+        "2xl": "var(--radius-lg)",
+        "3xl": "var(--radius-lg)",
       },
 
       spacing: {
@@ -177,14 +236,42 @@ module.exports = {
         "container-xl": "var(--container-xl)",
       },
 
+      // Containment: Tailwind's own `ease-out` / `ease-in` / `ease-in-out`
+      // keys are `out` / `in` / `in-out`. One curve for the whole system
+      // (foundations.md) — a pasted `ease-out` becomes `--ease-air` instead
+      // of quietly introducing a second bezier. genso-check's
+      // `second-easing` rule no longer flags these named keywords as of
+      // v2.1 — only a hand-typed `cubic-bezier(...)` or a JS `ease: "..."`
+      // string (which this preset can't reach) still are.
       transitionTimingFunction: {
         air: "var(--ease-air)",
+        DEFAULT: "var(--ease-air)",
+        in: "var(--ease-air)",
+        out: "var(--ease-air)",
+        "in-out": "var(--ease-air)",
       },
 
+      // Containment: Tailwind generates duration-75 through duration-1000.
+      // Only three durations exist (foundations.md) — every numeric key a
+      // pasted block is likely to reach for is remapped to the nearest of
+      // the three rather than left to generate its own value. genso-check's
+      // `unsanctioned-duration` rule no longer flags these named numeric
+      // forms as of v2.1 — only `duration-[…]` arbitrary values remain
+      // flagged, since those are the genuinely open-ended case this preset
+      // can't contain.
       transitionDuration: {
         fast: "var(--duration-fast)",
         DEFAULT: "var(--duration-default)",
         slow: "var(--duration-slow)",
+        75: "var(--duration-fast)",
+        100: "var(--duration-fast)",
+        150: "var(--duration-fast)",
+        200: "var(--duration-fast)",
+        300: "var(--duration-default)",
+        400: "var(--duration-default)",
+        500: "var(--duration-default)",
+        700: "var(--duration-slow)",
+        1000: "var(--duration-slow)",
       },
 
       boxShadow: {

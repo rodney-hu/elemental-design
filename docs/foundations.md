@@ -101,6 +101,38 @@ with the obvious choice. `npm run check` recomputes all four.
   reads garish fast. Don't "fix" this without testing it side by side
   first.
 
+### Per-project theme *(v2.1)*
+
+Dark-only stays the rule (see "Colour is not bound to role" above) — this is
+about re-theming the four elements, not adding a light mode.
+
+Every derived color already resolves from `rgb(var(--x-rgb) / alpha)`:
+`-text`, `-soft`, both glow strengths, `wash`, `edge`, `halo`, and `on-*` all
+trace back to one of the eight channel triplets authored at the top of
+`tokens.css`. That means a client project can swap an element's whole
+identity by overriding exactly **two** values — the two that are
+hand-authored rather than derived:
+
+```css
+/* client-theme.css — imported AFTER elemental-design/tokens.css */
+[data-theme="acme"] {
+  --water-rgb: 91 33 182; /* violet, replacing the stock blue */
+  --water-text-rgb: 167 139 250; /* a lighter, text-safe tint of the same hue */
+}
+```
+
+Everything downstream of those two triplets — `--water-soft`,
+`--water-glow`/`-glow-bold`, `--wash-water`, `--edge-water`, `--halo-water`
+— recomputes for free. Nothing else to touch.
+
+**The one thing that doesn't auto-follow:** `--on-water` (which neutral,
+`--void` or `--washi`, is legible as text ON a solid `--water` fill) is a
+contrast-computed *pairing*, not a formula — see the `--on-{element}`
+block above. Recompute it by hand against the same 4.5:1 AA floor before
+shipping a solid-fill button or badge in the new hue; a bright enough
+replacement color can flip which neutral passes, same trap v2.0 hit for the
+stock four.
+
 ## Type
 
 - Three font roles, each with a hard boundary:
@@ -302,6 +334,54 @@ combination that reads as a mistake rather than a choice.
   Google's CDN at runtime. A CDN dependency silently breaks in sandboxed
   or offline preview environments — this was a real, hard-to-diagnose
   bug once. Don't reintroduce a `<link>` to fonts.googleapis.com.
+
+## Remixing external code *(v2.1)*
+
+A component or marketing block copied from 21st.dev (or anywhere
+shadcn-shaped) arrives in a different vocabulary — `bg-background`,
+`rounded-2xl`, `duration-300`, `ease-out`, `cn(...)`, `<Button
+variant="default" size="lg">`. This system now meets that vocabulary partway
+rather than requiring a rewrite pass first. Full walkthrough with real
+examples: `docs/remixing.md`. The short version:
+
+- **It mostly already renders.** `tokens/tailwind-preset.cjs` aliases
+  shadcn's semantic color names onto Genso tokens (`bg-background` →
+  `bg-void`, `text-muted-foreground` → `text-washi-dim`, `bg-primary` →
+  `bg-fire`, …) and **contains** Tailwind's own scale keys a pasted block
+  assumes — `rounded-xl/2xl/3xl`, `duration-N`, `ease-out/in/in-out` — onto
+  the sanctioned radius/duration/easing scale instead of leaving them free
+  to generate soft corners or a second curve. See `docs/decisions.md` for
+  why containment, not just aliasing.
+- **`cn()` sits next to `cx()`.** `cx` (this package's own components) is a
+  plain join; `cn` (`components/primitives.tsx`) runs it through
+  `tailwind-merge`, so a pasted `cn(base, className)` pattern actually
+  resolves conflicts — a passed `className="bg-gradient-to-br ..."` wins
+  over a colliding base class instead of both existing in the output.
+  That's the mechanism behind "flexibility to add effects, backgrounds,
+  gradients" — nothing in the component layer blocks an arbitrary
+  className, `cn()` is what makes it actually take effect.
+- **`Button` accepts `variant`/`size`** as a compatibility shim alongside
+  the canonical `accent`/`shape` — `variant="destructive"` reaches for
+  `--semantic-error` directly, since destructive is semantic, not elemental.
+  New Genso code should still use `accent`/`shape`.
+- **Run `genso-check --translate <file>` on a fresh paste.** It rewrites
+  the mechanical subset of what's left (`text-[13px]` → `text-2xs`,
+  `max-w-[42rem]` → `max-w-container-sm`, remaining shadcn names, arbitrary
+  radius/duration/easing brackets) and prints a diff; add `--write` to
+  apply. What it *won't* touch — raw Tailwind palette colors
+  (`bg-white/5`, `text-gray-400`) — has no single principled Genso
+  equivalent and needs a human call.
+- **`lucide-react` icons are allowed unconstrained.** The mark drawing
+  rules in this file govern Genso's own element marks
+  (`components/marks.tsx`), not every icon in a pasted block — see
+  `docs/decisions.md`.
+- **Loosen anything else with `genso-allow`.** The existing
+  `genso-allow: <rule> — <reason>` comment (one rule, one line) is the
+  sanctioned way to intentionally break a rule for a block you like. For a
+  fresh paste tripping several rules at once before you've integrated it,
+  `genso-allow-file: <reason>` anywhere in the file suppresses every rule
+  for that file — narrow it back down to per-line `genso-allow`s (or
+  remove it) as the block gets folded in for real.
 
 ## Adding something new
 

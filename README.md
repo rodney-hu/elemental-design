@@ -10,7 +10,8 @@ every project, so no project starts from a blank canvas.
 **New here?** Read `docs/philosophy.md` (what the system believes), then
 `docs/foundations.md` (what to actually do). `docs/decisions.md` is a
 reference, not a read-through — reach for it when you want to change something
-and need to know whether it was already tried.
+and need to know whether it was already tried. Pasting in a component from
+21st.dev or anywhere shadcn-shaped? Start at `docs/remixing.md` instead.
 
 | Folder | What lives here | When to open it |
 |---|---|---|

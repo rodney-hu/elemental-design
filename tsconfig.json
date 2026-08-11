@@ -19,6 +19,6 @@
        alias here would bypass the exports map and hide a missing subpath
        until it broke in someone else's project. */
   },
-  "include": ["components", "layout", "motion", "showcase/src"],
+  "include": ["components", "layout", "motion", "showcase/src", "examples"],
   "exclude": ["node_modules", "dist-showcase"]
 }

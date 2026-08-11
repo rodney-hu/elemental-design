@@ -185,12 +185,12 @@ const rules = [
   /* — Motion — three components invented durations, one invented a curve —— */
   {
     name: "unsanctioned-duration",
-    doc: "Three durations exist. If the value you want isn't one of the three, the answer is one of the three (foundations.md).",
+    doc: "Three durations exist. If the value you want isn't one of the three, the answer is one of the three (foundations.md). As of v2.1 the preset CONTAINS every named duration-N Tailwind generates (duration-75…duration-1000) onto the nearest of the three, so a pasted shadcn block's `duration-300` already lands correctly — only the genuinely open-ended `duration-[…]` arbitrary form still bypasses the scale and gets flagged here.",
     test({ src, add }) {
-      for (const m of src.matchAll(/\bduration-(\d+|\[[^\]]+\])\b/g)) {
+      for (const m of src.matchAll(/\bduration-\[[^\]]+\]/g)) {
         add(
           m.index,
-          `"${m[0]}" — the system has exactly three durations: duration-fast (150ms), duration-DEFAULT (400ms), duration-slow (700ms)`,
+          `"${m[0]}" — arbitrary durations bypass the containment layer. Use a named duration-* (fast/DEFAULT/slow, or any duration-N — the preset maps it to the nearest of the three) or import { duration } from "elemental-design/motion"`,
         );
       }
       /* The JS side: a raw seconds/ms literal on a transition. The lookbehind
@@ -213,19 +213,8 @@ const rules = [
 
   {
     name: "second-easing",
-    doc: "One easing curve for the whole system. A second one reached production undetected as ease:'easeInOut' (decisions.md).",
-    test({ src, add, classes }) {
-      /* `ease-out` and `ease-in` are also ordinary English, so these are
-         checked only where a class can actually live — otherwise the rule
-         fires on the sentence "a single ease-out and three durations", and a
-         linter that flags your prose gets switched off. */
-      for (const m of src.matchAll(/\bease-(?:in-out|in|out|linear)\b/g)) {
-        if (!inRanges(classes, m.index)) continue;
-        add(
-          m.index,
-          `"${m[0]}" introduces a second easing curve — use ease-air, or import { easeAir } from "elemental-design/motion"`,
-        );
-      }
+    doc: "One easing curve for the whole system. A second one reached production undetected as ease:'easeInOut' (decisions.md). As of v2.1 the preset CONTAINS ease-out/ease-in/ease-in-out/ease onto --ease-air, so a pasted block's named easing class already resolves correctly — only a hand-typed cubic-bezier(...) or a JS ease string (which the preset can't reach) still bypasses the one-curve rule and gets flagged here.",
+    test({ src, add }) {
       /* The JS form can't collide with prose, so it scans everything. */
       for (const m of src.matchAll(
         /\bease:\s*["'](?:easeIn|easeOut|easeInOut|linear|anticipate|backOut)["']/g,
@@ -253,16 +242,10 @@ const rules = [
   /* — Shape and space ——————————————————————————————————————————— */
   {
     name: "soft-radius",
-    doc: "Sharp corners are the single biggest 'feel' difference between Genso and the archived Elemental Aura system (decisions.md).",
+    doc: "Sharp corners are the single biggest 'feel' difference between Genso and the archived Elemental Aura system (decisions.md). As of v2.1 the preset CONTAINS rounded-xl/2xl/3xl onto rounded-lg (the sharpest scale ceiling), so a pasted block's named radius class already resolves correctly — only the genuinely open-ended `rounded-[…]` arbitrary form still bypasses the scale and gets flagged here.",
     test({ src, add }) {
-      for (const m of src.matchAll(/\brounded-(?:xl|2xl|3xl)\b/g)) {
-        add(
-          m.index,
-          `"${m[0]}" — radius stays sharp: rounded (2px) on controls, rounded-md (3px) on cards, rounded-lg (6px) at most. rounded-full is fine for pills and dots`,
-        );
-      }
       for (const m of src.matchAll(/\brounded-\[[^\]]+\]/g)) {
-        add(m.index, `"${m[0]}" — use the radius scale`);
+        add(m.index, `"${m[0]}" — use the radius scale (rounded / rounded-md / rounded-lg)`);
       }
     },
   },
@@ -403,6 +386,8 @@ export const usageRuleNames = rules.map((r) => r.name);
 
 export function runUsageRules(rawSrc, file, report) {
   const allowed = collectAllowances(rawSrc);
+  // genso-allow-file: <reason> — whole-file exemption, see source.mjs.
+  if (allowed.fileWide) return;
   const src = stripComments(rawSrc);
   const classes = classRanges(src);
 

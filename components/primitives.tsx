@@ -6,9 +6,31 @@
  */
 
 import * as React from "react";
+import { twMerge } from "tailwind-merge";
 
 export function cx(...classes: Array<string | false | undefined>) {
   return classes.filter(Boolean).join(" ");
+}
+
+/* ------------------------------------ cn ------------------------------------ */
+/* `cx` above is a plain filter+join — fine for this package's own components,
+   where every class list is authored once and never needs to resolve a
+   conflict. Pasted shadcn-shaped code assumes something stronger: `cn(base,
+   className)` where a passed className should WIN over a colliding utility
+   in `base` (e.g. base has `p-6`, the caller passes `className="p-8"` and
+   expects `p-8` to apply) rather than both existing and cascade order in the
+   generated stylesheet silently deciding which one does.
+
+   `cx` can't do that — string concatenation has no idea `p-6` and `p-8` are
+   the same property. `cn` wraps it with `tailwind-merge`, which does, so a
+   remixed component's `cn(buttonVariants(...), className)` pattern works
+   exactly as it did wherever it was copied from. Reach for `cn` on anything
+   accepting an external className that should be allowed to override the
+   base; keep `cx` for this package's own internal composition, which never
+   needs conflict resolution and shouldn't carry the extra dependency weight
+   conceptually. See docs/remixing.md. */
+export function cn(...inputs: Array<string | false | undefined>) {
+  return twMerge(cx(...inputs));
 }
 
 /* ---------------------------------- Button --------------------------------- */
@@ -30,9 +52,35 @@ export function cx(...classes: Array<string | false | undefined>) {
 type ButtonAccent = "fire" | "water" | "earth" | "air";
 type ButtonShape = "solid" | "outline" | "quiet";
 
+/* shadcn's vocabulary, for the compat shim below. Not exported as a type
+   name elsewhere in the system — `accent`/`shape` stay the one real API. */
+type ButtonVariant =
+  | "default"
+  | "destructive"
+  | "outline"
+  | "secondary"
+  | "ghost"
+  | "link";
+type ButtonSize = "default" | "sm" | "lg" | "icon";
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   accent?: ButtonAccent;
   shape?: ButtonShape;
+  /**
+   * Compatibility shim for pasted shadcn-shaped code — `variant` and `size`
+   * below. **Not the canonical API.** New Genso code should use
+   * `accent`/`shape`, which this maps onto internally; this exists so a
+   * component copied from 21st.dev renders correctly without a rewrite pass
+   * first. When both are given, `accent`/`shape` win.
+   *
+   * `variant="destructive"` is the one case with no `accent` equivalent —
+   * fire/water/earth/air are elements, not semantics, and "destructive" is
+   * a semantic (see foundations.md on why --semantic-error and --fire stay
+   * separate tokens). It renders with the semantic error tokens directly,
+   * same tier as `Status tone="error"`.
+   */
+  variant?: ButtonVariant;
+  size?: ButtonSize;
 }
 
 const BUTTON_BASE =
@@ -73,20 +121,90 @@ const buttonOutline: Record<ButtonAccent, string> = {
 const BUTTON_QUIET =
   "bg-transparent border border-line-strong text-washi hover:border-washi-dim focus-visible:ring-washi/30";
 
+/* Destructive is semantic, not elemental — it reaches for --semantic-error
+   directly rather than routing through an accent, the same split
+   foundations.md draws for Status. --semantic-error and --fire happen to
+   share a hex value; they don't share a variable, and this is why: a
+   destructive button must stay correct even if fire's triplet ever moves. */
+const BUTTON_DESTRUCTIVE =
+  "bg-error text-washi shadow-glow-fire-soft hover:shadow-glow-fire hover:bg-error/90 focus-visible:ring-error";
+
+/* variant → { accent, shape } for the four that map onto the real system.
+   `ghost` and `secondary` both land on `quiet` — Genso doesn't distinguish
+   a bordered vs. borderless neutral button, so this is an approximation,
+   not a promise of a pixel match to shadcn's own ghost. `link` adds an
+   underline and strips the button padding via `cn`, since a link-styled
+   button keeps its inline flow. */
+const VARIANT_MAP: Record<
+  Exclude<ButtonVariant, "destructive">,
+  { accent: ButtonAccent; shape: ButtonShape; extra?: string }
+> = {
+  default: { accent: "fire", shape: "solid" },
+  outline: { accent: "fire", shape: "outline" },
+  secondary: { accent: "fire", shape: "quiet" },
+  ghost: { accent: "fire", shape: "quiet" },
+  link: {
+    accent: "fire",
+    shape: "quiet",
+    extra:
+      "border-none p-0 h-auto underline underline-offset-4 hover:no-underline shadow-none",
+  },
+};
+
+/* size → a padding/type override, merged via `cn` so it actually wins over
+   BUTTON_BASE's `px-6 py-3` instead of both existing in the class list.
+   Genso's own components don't need a size axis — one button size, set by
+   context — so this stays scoped to the compat shim. */
+const SIZE_MAP: Record<ButtonSize, string> = {
+  default: "",
+  sm: "px-4 py-2 text-sm",
+  lg: "px-8 py-4 text-md",
+  icon: "p-3 aspect-square",
+};
+
 export function Button({
-  accent = "fire",
-  shape = "solid",
+  accent,
+  shape,
+  variant,
+  size = "default",
   className,
   ...props
 }: ButtonProps) {
-  const look =
-    shape === "quiet"
-      ? BUTTON_QUIET
-      : shape === "outline"
-        ? buttonOutline[accent]
-        : buttonSolid[accent];
+  // accent/shape are the canonical API and win when given; `variant` is the
+  // compat path, and only consulted when they're absent.
+  let look: string;
+  let extra: string | undefined;
 
-  return <button className={cx(BUTTON_BASE, look, className)} {...props} />;
+  if (variant === "destructive") {
+    look = BUTTON_DESTRUCTIVE;
+  } else if (accent || shape) {
+    const resolvedAccent = accent ?? "fire";
+    const resolvedShape = shape ?? "solid";
+    look =
+      resolvedShape === "quiet"
+        ? BUTTON_QUIET
+        : resolvedShape === "outline"
+          ? buttonOutline[resolvedAccent]
+          : buttonSolid[resolvedAccent];
+  } else if (variant) {
+    const mapped = VARIANT_MAP[variant];
+    look =
+      mapped.shape === "quiet"
+        ? BUTTON_QUIET
+        : mapped.shape === "outline"
+          ? buttonOutline[mapped.accent]
+          : buttonSolid[mapped.accent];
+    extra = mapped.extra;
+  } else {
+    look = buttonSolid.fire;
+  }
+
+  return (
+    <button
+      className={cn(BUTTON_BASE, look, extra, SIZE_MAP[size], className)}
+      {...props}
+    />
+  );
 }
 
 /* ----------------------------------- Card ----------------------------------- */
